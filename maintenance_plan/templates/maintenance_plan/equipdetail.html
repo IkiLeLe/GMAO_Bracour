@@ -1,0 +1,29 @@
+{% extends "maintenance_plan/master.html" %}
+
+{% block content %}
+
+<h1 class="">Hello! this is the equipement detail page of {{ object.serial_number }}-{{ object.name }}. </h1>
+<div class="container display-5">
+    Name                : {{ object.name }}<br>
+    serial number       : {{ object.serial_number }}<br>
+    Type                : {{ object.type }}<br>
+    Installation date   : {{ object.installation_date }}<br>
+    line                : {{ object.lineId }}<br>
+
+</div>
+
+<div><h1 class="display-5">Sections</h1></div>
+<div>
+    {% for section in section_data %}
+    <div>
+        <ul>
+        <li>Name         : {{ section.section_name }}</li>
+        <li>Description  : {{ section.description }}</li>
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+       
+
+
+{% endblock  %}

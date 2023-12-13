@@ -1,0 +1,101 @@
+import datetime
+
+from django.contrib import admin
+from django.db import models
+from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+
+# Create your models here.
+class Lines (models.Model):
+    name = models.CharField(max_length=7)
+    
+    class Meta:
+        verbose_name_plural = "Lines"
+    
+    def __str__(self):
+        return self.name
+
+class Equipement (models.Model):
+    serial_number = models.CharField(max_length=8, primary_key=True)
+    name = models.CharField(max_length=50)
+    TYPE_CHOICES = [
+        ('M', 'Machinery'),
+        ('T', 'Tools'),
+        ('V', 'Vehicles'),
+        ('C', 'Computers'),
+        ('E', 'Electronics'),
+    ]
+    type = models.CharField(max_length=2, choices=TYPE_CHOICES)
+    installation_date = models.DateField(auto_now=False, auto_now_add=False)
+    manufacturer = models.CharField(max_length=50)
+    lineId = models.ForeignKey(Lines, on_delete=models.DO_NOTHING) 
+    
+    def __str__(self):
+        return self.serial_number
+    
+class Section(models.Model):
+    section_name = models.CharField(max_length=50)
+    description = models.TextField(null=True)
+    equipement = models.ForeignKey(Equipement, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f'{self.section_name}/{self.equipement}'
+    
+class Contributor(models.Model):
+    contributor_name = models.CharField(max_length=50)
+    acronym = models.CharField(max_length=5)
+    
+    def __str__(self):
+        return self.contributor_name
+    
+
+class MaintenanceSchedule (models.Model):
+    operation = models.CharField(max_length=255)
+    description = models.TextField(null=True)
+    FREQUENCY_CHOICES = [
+        ('Av', 'Avant production'),
+        ('AP', 'Après production'),
+        ('J', 'Journalier'),
+        ('H', 'Hebdomadaire'),
+        ('M', 'Mensuelle'),
+        ('TM', 'Trimestrielle'),
+        ('SM', 'Semestrielle'),
+        ('A', 'Annuelle'),
+        ('2A', 'Chaque 2 ans'),
+        ('3A', 'Chaque 3 ans'),
+        ('4A', 'Chaque 4 ans'),
+        ('5A', 'Chaque 5 ans'),
+        ('6A', 'Chaque 6 ans'),
+        ('N/A', 'inconnue')
+        ]
+    frequency = models.CharField(max_length=4,
+                                 choices=FREQUENCY_CHOICES,
+                                 default='Hebdomadaire'
+                                 )
+    MODE_CHOICES = [
+        ('A', 'Arrêt'),
+        ('M', 'Marche'),
+        ('M/A', 'Marche/Arrêt'),
+    ]
+    mode = models.CharField(max_length=5, choices=MODE_CHOICES, default='Marche/Arrêt')
+    level = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    type = models.CharField(max_length=10, default='Preventive', validators=[RegexValidator('Preventive')])
+    duration = models.DurationField()
+    INTERVENTION_TYPE_CHOICES = [
+        ('N', 'Nettoyage'),
+        ('M', 'Maintenance'),
+        ('L', 'Lubrification'),
+    ]
+    intervention_type = models.CharField(max_length=50, choices=INTERVENTION_TYPE_CHOICES, default='Maintenance')
+    section = models.ForeignKey(Section, on_delete=models.DO_NOTHING)
+    ison = models.ManyToManyField(Contributor, through='Contributors')
+
+    def __str__(self):
+        return self.operation
+
+
+class Contributors(models.Model):
+    person = models.ForeignKey(Contributor, on_delete=models.DO_NOTHING) 
+    schedule = models.ForeignKey(MaintenanceSchedule, on_delete=models.DO_NOTHING) 
+    quantity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(20)])
+    

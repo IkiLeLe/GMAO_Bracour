@@ -1,0 +1,38 @@
+{% extends "maintenance_plan/master.html" %}
+
+{% block content %}
+
+<h1 class="">Hello! this is the task detail page </h1>
+<div>
+    Operation           : {{ object.operation }}<br>
+    Section             : {{ object.section }}<br>
+    Type                : {{ object.type }}<br>
+    Frequency           : {{ object.get_frequency_display }}<br>
+    Mode                : {{ object.get_mode_display }}<br>
+    Duration            : {{ object.duration }}<br>
+    Intervention Type   : {{ object.get_intervention_type_display }}<br>
+    Description         : <p>{{ object.description }}</p><br>
+    Contributors
+    <ul>
+        {% for contributor in contributors %}
+        <li>{{ contributor.contributor_name }} - Quantity: {{ contributor.contributors_set.first.quantity }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!--
+<div><h1 class="display-5">Sections</h1></div>
+<div>
+    {% for section in section_data %}
+    <div>
+        <ul>
+        <li>Name         : {{ section.section_name }}</li>
+        <li>Description  : {{ section.description }}</li>
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+-->  
+
+
+{% endblock  %}

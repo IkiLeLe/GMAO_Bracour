@@ -1,0 +1,69 @@
+{% extends 'maintenance_plan/master.html' %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="col-md-5 mx-auto bg-light p-5 rounded">
+        <h1 class="mb-4 h3">Sign up</h1>
+
+        <form method="post" action=".">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">First Name</label>
+                {{ form.first_name }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Last Name</label>
+                {{ form.last_name }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Badge Number</label>
+                {{ form.badge_number }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Position</label>
+                {{ form.position }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                {{ form.username }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                {{ form.password1 }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Repeat password</label>
+                {{ form.password2 }}
+            </div>
+
+            {% if form.errors or form.non_field_errors %}
+                <div class="mb-3 p-3 bg-danger text-white rounded">
+                    {% for field in form %}
+                        {{ field.errors }}
+                    {% endfor %}
+
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <button class="btn btn-primary btn-lg">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

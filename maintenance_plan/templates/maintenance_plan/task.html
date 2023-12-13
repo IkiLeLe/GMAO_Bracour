@@ -1,0 +1,218 @@
+{% extends "maintenance_plan/master.html" %}
+
+{% block content %}
+
+<div class="container-fluid ">
+    
+    <div class="row">
+        <div class="col-md-8 bg-light" style="width: 75%; padding: 50px">
+            <h1 class="display-4 text-center text-custom" style="font-size: 50px; font-weight: bold; color: #E03915;">Maintenance Schedule</h1>
+            <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                <table class="table table-hover table-striped rounded-4">
+                    <thead>
+                        <tr>
+                            <th scope="col">Operation</th>
+                            <th scope="col">Section</th>
+                            <th scope="col">Equipement</th>
+                            <th scope="col">Line</th>
+                            <th scope="col">Frequency</th>
+                            <th scope="col">Mode</th>
+                            <th scope="col">Level</th>
+                            <th scope="col">Intervention Type</th>
+                            
+                        
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for MaintenanceSchedule in task_list %}
+                        <tr data-detail-url="{% url 'maintenance_plan:taskdetail' MaintenanceSchedule.id %}">
+                            <td>{{ MaintenanceSchedule.operation }}</td>
+                            <td>{{ MaintenanceSchedule.section.section_name }}</td>
+                            <td>{{ MaintenanceSchedule.section.equipement.serial_number }}</td>
+                            <td>{{ MaintenanceSchedule.section.equipement.lineId }}</td>
+                            <td>{{ MaintenanceSchedule.get_frequency_display }}</td>
+                            <td>{{ MaintenanceSchedule.get_mode_display }}</td>
+                            <td>{{ MaintenanceSchedule.level }}</td>
+                            <td>{{ MaintenanceSchedule.get_intervention_type_display }}</td>
+                            
+                        
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-4 rounded bg-light" style="width: 25%; padding: 50px">
+            <h2>Filter</h2>
+            <form method="get" class="form-inline" id="filterForm">
+                {{ filter_form.as_p }}
+                <button type="reset" class="btn btn-secondary">Clear</button><br>
+            </form>
+        </div>
+        <div class="export-buttons mt-3">
+            <a href="{% url 'maintenance_plan:export_csv' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-success export-btn" data-export-type="csv">Export to CSV</a>
+            <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf">Export to PDF</a>
+        </div>
+    </div>
+</div>
+<script>
+     document.addEventListener("DOMContentLoaded", function() {
+        const maintenanceTable = document.getElementById('maintenanceTable');
+        const filterForm = document.getElementById('filterForm');
+        const exportButtons = document.querySelectorAll('.export-buttons a');
+
+        maintenanceTable.addEventListener('click', function(event) {
+            const clickedRow = event.target.closest('tr');
+            const detailUrl = clickedRow.getAttribute('data-detail-url');
+            if (detailUrl) {
+                window.location.href = detailUrl;
+            }
+        });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const filterForm = document.getElementById('filterForm');
+        const formInputs = filterForm.querySelectorAll('input, select');
+        const clearButton = filterForm.querySelector('button[type="reset"]');
+        const exportButtons = document.querySelectorAll('.export-buttons a');
+    
+        formInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // Simuler la soumission du formulaire
+                updateExportURL();
+                filterForm.submit();
+            });
+        });
+    
+        // Ajoutez un gestionnaire d'événements pour le bouton Clear
+        clearButton.addEventListener('click', function() {
+            formInputs.forEach(input => {
+                if (input.type !== 'submit' && input.type !== 'reset') {
+                    input.value = '';  // Réinitialiser la valeur du champ
+                }
+            });
+            // Simuler la soumission du formulaire
+            updateExportURL();
+            filterForm.submit();
+        });
+    
+        // Ajoutez un gestionnaire d'événements pour les boutons d'exportation
+        exportButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                // Annulez l'événement de clic par défaut pour éviter une redirection immédiate
+                event.preventDefault();
+                // Obtenez l'URL de l'exportation avec les paramètres du formulaire et le type d'exportation
+                const exportURL = getExportURL(button.getAttribute('data-export-type'));
+                // Redirigez vers l'URL d'exportation
+                window.location.href = exportURL;
+            });
+        });
+
+        // Fonction pour mettre à jour l'URL d'exportation avec les paramètres du formulaire
+        function updateExportURL() {
+            exportButtons.forEach(button => {
+                const originalHref = button.getAttribute('data-original-href');
+                const exportURL = getExportURL(button.getAttribute('data-export-type'));
+                button.setAttribute('href', exportURL);
+            });
+        }
+
+        // Fonction pour obtenir l'URL d'exportation avec les paramètres du formulaire et le type d'exportation
+        function getExportURL(exportType) {
+            const baseExportURL = exportType === 'pdf' ? "{% url 'maintenance_plan:export_pdf' %}" : "{% url 'maintenance_plan:export_csv' %}";
+            const queryParams = new URLSearchParams();
+            formInputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    // Si c'est une case à cocher, ajoutez toutes les valeurs cochées
+                    document.querySelectorAll(`input[name="${input.name}"]:checked`).forEach(checkbox => {
+                        queryParams.append(input.name, checkbox.value);
+                    });
+                } else {
+                    // Sinon, ajoutez simplement la valeur
+                    queryParams.append(input.name, input.value);
+                }
+            });
+            return baseExportURL + '?' + queryParams.toString();
+        }
+    });
+
+});
+</script>
+
+
+
+{% endblock  %}
+
+<!--
+<div> 
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Task</th>
+                <th scope="col">Section/Equipement</th>
+                <th scope="col">Frequency</th>
+                <th scope="col">Intervention type</th>
+            </tr>
+        </thead>  
+     {% for MaintenanceSchedule in task_list %}
+        <tbody>
+            <tr onclick="window.location.href='{% url 'maintenance_plan:taskdetail' MaintenanceSchedule.id %}';">
+                <th>{{ MaintenanceSchedule.operation }}</a></th>
+                <th>{{ MaintenanceSchedule.section }}</th>
+                <th>{{ MaintenanceSchedule.get_frequency_display }}</th>
+                <th>{{ MaintenanceSchedule.get_intervention_type_display }}</th>
+            </tr>
+        </tbody>
+     {% endfor %} 
+    </table>
+    
+</div>
+
+<h1 class="display-3">Hello! this is the maintenance task page. </h1>
+     
+<form id="filter-form" method="GET" action="{% url 'maintenance_plan:your_filter_view' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="button" id="clear-filter">Clear Filter</button>
+</form>
+
+<div>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Task</th>
+                <th scope="col">Section/Equipment</th>
+                <th scope="col">Frequency</th>
+                <th scope="col">Intervention type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for maintenance_schedule in task_list %}
+                <tr>
+                    <th><a href="{% url 'maintenance_plan:taskdetail' maintenance_schedule.id %}">{{ maintenance_schedule.operation }}</a></th>
+                    <th>{{ maintenance_schedule.section }}</th>
+                    <th>{{ maintenance_schedule.frequency }}</th>
+                    <th>{{ maintenance_schedule.intervention_type }}</th>
+                </tr>
+            {% endfor %} 
+        </tbody>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    // jQuery is used for simplicity, make sure to include it in your project
+
+    // Function to submit the form when a filter option changes
+    $('form#filter-form select').change(function() {
+        $('form#filter-form').submit();
+    });
+
+    $('#clear-filter').click(function() {
+        $('form#filter-form input').val('');
+        $('form#filter-form select').val('');
+        $('form#filter-form').submit();
+    });
+</script>
+
+-->

@@ -1,0 +1,38 @@
+{% extends "maintenance_plan/master.html" %}
+
+{% block content %}
+
+
+<h1 class="display-3">Hello! this is the equipements.</h1>
+
+{% for Lines in Line_list %}
+    <div class="accordion accordion-flush" id="accordionFlushExample{{ Lines.id }}">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="flush-heading{{ Lines.id }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ Lines.id }}" aria-expanded="false" aria-controls="flush-collapse{{ Lines.id }}">
+                    {{ Lines.name }}
+                </button>
+            </h2>
+
+            <div id="flush-collapse{{ Lines.id }}" class="accordion-collapse collapse" aria-labelledby="flush-heading{{ Lines.id }}" data-bs-parent="#accordionFlushExample{{ Lines.id }}">
+                <div class="accordion-body">
+                    <ul class="list-group">
+                        {% for Equipement in Equipement_list %}
+                            {% if Equipement.lineId.id == Lines.id %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'maintenance_plan:detail' Equipement.serial_number %}">{{ Equipement.serial_number }}-{{ Equipement.name }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+
+
+
+
+{% endblock  %}
