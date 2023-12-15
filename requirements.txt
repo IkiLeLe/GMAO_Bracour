@@ -1,0 +1,15 @@
+﻿asgiref==3.7.2
+djando==0.2
+Django==5.0
+django-filter==23.5
+django-mssql-backend==2.8.1
+django-pyodbc-azure==2.1.0.0
+mssql-django==1.3
+Pillow==10.1.0
+pyodbc==5.0.1
+pytz==2023.3.post1
+reportlab==4.0.7
+sqlparse==0.4.4
+style==1.1.0
+tzdata==2023.3
+update==0.0.1
