@@ -8,7 +8,7 @@
         <div class="col-md-8 bg-light" style="width: 75%; padding: 50px">
             <h1 class="display-4 text-center text-custom" style="font-size: 50px; font-weight: bold; color: #E03915;">Maintenance Schedule</h1>
             <div class="rounded" style="padding: 5px ; background-color: white;"> 
-                <table class="table table-hover table-striped rounded-4">
+                <table class="table table-hover table-striped rounded-4" id="maintenanceTable">
                     <thead>
                         <tr>
                             <th scope="col">Operation</th>
@@ -49,32 +49,21 @@
                 {{ filter_form.as_p }}
                 <button type="reset" class="btn btn-secondary">Clear</button><br>
             </form>
+            <div class="export-buttons mt-3">
+                <a href="{% url 'maintenance_plan:export_csv' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-success export-btn" data-export-type="csv">Export to CSV</a>
+                <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf">Export to PDF</a>
+            </div>
         </div>
-        <div class="export-buttons mt-3">
-            <a href="{% url 'maintenance_plan:export_csv' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-success export-btn" data-export-type="csv">Export to CSV</a>
-            <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf">Export to PDF</a>
-        </div>
+
     </div>
 </div>
 <script>
-     document.addEventListener("DOMContentLoaded", function() {
-        const maintenanceTable = document.getElementById('maintenanceTable');
-        const filterForm = document.getElementById('filterForm');
-        const exportButtons = document.querySelectorAll('.export-buttons a');
-
-        maintenanceTable.addEventListener('click', function(event) {
-            const clickedRow = event.target.closest('tr');
-            const detailUrl = clickedRow.getAttribute('data-detail-url');
-            if (detailUrl) {
-                window.location.href = detailUrl;
-            }
-        });
-
     document.addEventListener("DOMContentLoaded", function() {
         const filterForm = document.getElementById('filterForm');
         const formInputs = filterForm.querySelectorAll('input, select');
         const clearButton = filterForm.querySelector('button[type="reset"]');
         const exportButtons = document.querySelectorAll('.export-buttons a');
+        const maintenanceTable = document.getElementById('maintenanceTable');
     
         formInputs.forEach(input => {
             input.addEventListener('change', function() {
@@ -82,6 +71,14 @@
                 updateExportURL();
                 filterForm.submit();
             });
+        });
+
+        maintenanceTable.addEventListener('click', function(event) {
+            const clickedRow = event.target.closest('tr');
+            const detailUrl = clickedRow.getAttribute('data-detail-url');
+            if (detailUrl) {
+                window.location.href = detailUrl;
+            }
         });
     
         // Ajoutez un gestionnaire d'événements pour le bouton Clear
@@ -136,7 +133,7 @@
         }
     });
 
-});
+
 </script>
 
 
@@ -213,6 +210,20 @@
         $('form#filter-form select').val('');
         $('form#filter-form').submit();
     });
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+        const maintenanceTable = document.getElementById('maintenanceTable');
+        const filterForm = document.getElementById('filterForm');
+        const exportButtons = document.querySelectorAll('.export-buttons a');
+
+        maintenanceTable.addEventListener('click', function(event) {
+            const clickedRow = event.target.closest('tr');
+            const detailUrl = clickedRow.getAttribute('data-detail-url');
+            if (detailUrl) {
+                window.location.href = detailUrl;
+            }
+        });
 </script>
 
 -->

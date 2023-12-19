@@ -2,28 +2,78 @@
 
 {% block content %}
 
-<h1 class="">Hello! this is the equipement detail page of {{ object.serial_number }}-{{ object.name }}. </h1>
-<div class="container display-5">
-    Name                : {{ object.name }}<br>
-    serial number       : {{ object.serial_number }}<br>
-    Type                : {{ object.type }}<br>
-    Installation date   : {{ object.installation_date }}<br>
-    line                : {{ object.lineId }}<br>
+<h1 class="display-4 text-center">{{ object.name }} - {{ object.serial_number }}</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <div class="card border-danger mb-3" style="max-width: 18rem;">
+                <div class="card-header">{{ object.serial_number }}</div>
+                <div class="card-body">
+                    <div class="row row-cols-2">
+                        <div class="col">Name</div>
+                        <div class="col">: {{ object.name }}</div>
+                        <div class="col">Serial number</div>
+                        <div class="col">: {{ object.serial_number }}</div>
+                        <div class="col">Type</div>
+                        <div class="col">: {{ object.get_type_display }}</div>
+                        <div class="col">Installation date</div>
+                        <div class="col">: {{ object.installation_date }}</div>
+                        <div class="col">Line</div>
+                        <div class="col">: {{ object.lineId }}</div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+        <div class="col-8">
+            <div><h1 class="display-5">Sections</h1></div>
 
+            <div class="row">
+                <div class="col-4">
+                  <div class="list-group" id="list-tab" role="tablist">
+                    {% for section in section_data %}
+                      <a class="list-group-item list-group-item-action {% if forloop.first %}active{% endif %}" id="list-{{ section.id }}-list" data-bs-toggle="list" href="#list-{{ section.id }}" role="tab" aria-controls="list-{{ section.id }}">{{ section.section_name }}</a>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="col-8">
+                  <div class="tab-content" id="nav-tabContent">
+                    <strong>Description</strong><br>
+                    {% for section in section_data %}
+                      <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="list-{{ section.id }}" role="tabpanel" aria-labelledby="list-{{ section.id }}-list">
+                            <p>{{ section.description }}</p>
+                            <strong>Tasks</strong><br>
+                            {% for maintenance_schedule in maintenance_schedules %}
+                                {% if maintenance_schedule.section.id == section.id %}
+                                 <p>{{ maintenance_schedule.operation }}</p>
+                                {% endif %}
+                            {% endfor %}
+                      </div>
+                     
+
+                      
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              
+              
+
+
+
+          
+        </div>
+    </div>
 </div>
 
-<div><h1 class="display-5">Sections</h1></div>
-<div>
+{% endblock  %}
+
+<div class="container-fluid">
     {% for section in section_data %}
-    <div>
-        <ul>
-        <li>Name         : {{ section.section_name }}</li>
-        <li>Description  : {{ section.description }}</li>
-        </ul>
+    <div class="card border-danger mb-3" style="max-width: 18rem;">
+        <div class="card-header">{{ section.section_name }}</div>
+        <div class="card-body">
+            <p class="card-text">{{ section.description }}</p>
+        </div>
     </div>
     {% endfor %}
 </div>
-       
-
-
-{% endblock  %}

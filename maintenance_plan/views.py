@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import generic, View
 from .forms import MaintenanceScheduleFilterForm
 from django.http import JsonResponse, HttpResponse
@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from reportlab.pdfgen import canvas
 import csv
 from django_filters import rest_framework as filters
+from django.shortcuts import get_object_or_404
 
 
 from .models import Lines, Equipement, MaintenanceSchedule, Section, Contributor, Contributors
@@ -74,16 +75,24 @@ class TaskView(generic.ListView):
         return context
     
     
+
+
 class EquipementView(generic.DetailView):
     template_name = 'maintenance_plan/equipdetail.html'
     model = Equipement
-    #slug_field ='serial_number'
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         equipement_instance = self.get_object()
+        
+        # Get sections related to the equipment
         context['section_data'] = Section.objects.filter(equipement=equipement_instance)
+        
+        # Get maintenance schedules related to the equipment
+        context['maintenance_schedules'] = MaintenanceSchedule.objects.filter(section__equipement=equipement_instance)
+        
         return context
+
     
 class MaintenanceScheduleDetailView(generic.DetailView):
     model = MaintenanceSchedule
@@ -206,4 +215,15 @@ filter_instance = MaintenanceScheduleFilter(request.GET, queryset=MaintenanceSch
         def get_queryset(self):
         filter_instance = MaintenanceScheduleFilter(self.request.GET, queryset=MaintenanceSchedule.objects.all())
         return filter_instance.qs
+
+class EquipementView(generic.DetailView):
+    template_name = 'maintenance_plan/equipdetail.html'
+    model = Equipement
+    #slug_field ='serial_number'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        equipement_instance = self.get_object()
+        context['section_data'] = Section.objects.filter(equipement=equipement_instance)
+        return context
 """
