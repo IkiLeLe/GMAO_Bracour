@@ -3,14 +3,12 @@
 
 <html>
     <head>
-        <title>{% block title %}{% endblock %}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, post-check=0, pre-check=0">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous" defer></script>
-        
-        
-
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{% block title %}{% endblock %}</title>
+      <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, post-check=0, pre-check=0">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  
     </head>
     <body>
       <div id="root">
@@ -55,7 +53,7 @@
                       <div class="col-1">
                         <form class="d-flex" method="post" action="{% url 'account:logout' %}">
                           {% csrf_token %}
-                          <button class="btn btn-outline-danger" type="submit">Logout</button>
+                          <button class="btn btn-outline-danger" type="submit" id="logoutButton" onClick="handleLogout">Logout</button>
                         </form>
                       </div>
                     </div>
@@ -88,78 +86,123 @@
         </footer>
       
         
-        </div>
+      </div>
+      
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const loggedIn = JSON.parse("{{ request.user.is_authenticated|yesno:'true,false'|lower }}".toLowerCase()); // Check authentication status from session
 
-        <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-        <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-
-        <script>
-          class LoginPage extends React.Component {
-            constructor(props) {
-              super(props);
-              this.state = {
-                loggedIn: false,
-              };
-            }
-
-            componentDidMount() {
-              if (localStorage.getItem('userToken')) {
-                this.setState({ loggedIn: true });
-              }
-
-              window.addEventListener('beforeunload', this.handleBeforeUnload);
-            }
-
-            componentWillUnmount() {
-              window.removeEventListener('beforeunload', this.handleBeforeUnload);
-            }
-
-            handleBeforeUnload = () => {
-              localStorage.removeItem('userToken');
-            };
-
-            handleSubmit = (event) => {
+          const handleSubmit = (event) => {
               event.preventDefault();
-              // Code pour traiter les données de formulaire et effectuer la connexion
+              // Code to handle form data and perform login
               // ...
-              // Une fois la connexion réussie, on stocke le token de connexion en local storage
-              localStorage.setItem('userToken', 'valeur_du_token');
-              this.setState({ loggedIn: true });
-            };
+              // Upon successful login, the user token will be stored in the session by your Django view
+              window.location.reload(); // Reload the page to reflect the logged-in state
+          };
 
-            handleLogout = () => {
-              localStorage.removeItem('userToken');
-              this.setState({ loggedIn: false });
-            };
+          const handleLogout = () => {
+              // The token will be removed from the session by your Django view
+              window.location.href = '/login'; // Redirect to login page
+          };
 
-            render() {
-              return (
-                <div>
-                  {!this.state.loggedIn && (
-                    <form onSubmit={this.handleSubmit}>
-                      <label htmlFor="username">Nom d'utilisateur</label>
-                      <input type="text" id="username" name="username" required />
-
-                      <label htmlFor="password">Mot de passe</label>
-                      <input type="password" id="password" name="password" required />
-                      <button type="submit">Connexion</button>
-                    </form>
-                  )}
-                  {this.state.loggedIn && (
-                    <div>
-                      <p>Vous êtes connecté !</p>
-                      <button onClick={this.handleLogout}>Déconnexion</button>
-                    </div>
-                  )}
-                </div>
-              );
+          // ... (rest of your code remains the same)
+          // Gestionnaire d'événement pour le formulaire de connexion
+          const loginForm = document.querySelector('#loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleSubmit);
             }
-          }
 
-          ReactDOM.render(<LoginPage />, document.getElementById('root'));
-        </script>
-                
-        
+            // Gestionnaire d'événement pour le bouton de déconnexion
+          const logoutButton = document.querySelector('#logoutButton');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', handleLogout);
+            }
+            
+          document.addEventListener('backbutton', function () {
+                // Vérifie si l'utilisateur est déconnecté
+                if (!loggedIn) {
+                    window.location.href = '/login';
+                }
+            });
+
+            // Ajoute un gestionnaire d'événement avant le déchargement de la page
+            window.addEventListener('beforeunload', handleBeforeUnload);
+
+
+          // Access the user token from the session if needed
+          if (loggedIn) {
+            const token = JSON.parse("{{ request.session.userToken|default:'{}' }}"); // Get the token from the session
+              // Use the token for other purposes if needed
+          }
+      });
+
+    </script>
+  
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous" defer></script>
+
         
     </body>
 </html>
+
+<!--
+
+  document.addEventListener("DOMContentLoaded", function () {
+            const loggedIn = localStorage.getItem('userToken') !== null;
+
+            const handleBeforeUnload = () => {
+                localStorage.removeItem('userToken');
+            };
+
+            const handleSubmit = (event) => {
+                event.preventDefault();
+                // Code pour traiter les données de formulaire et effectuer la connexion
+                // ...
+                // Une fois la connexion réussie, on stocke le token de connexion en local storage
+                localStorage.setItem('userToken', 'valeur_du_token');
+                window.location.reload(); // Recharge la page pour refléter l'état connecté
+            };
+
+            const handleLogout = () => {
+                localStorage.removeItem('userToken');
+                window.location.href = '/login'; // Redirige vers la page de connexion
+            };
+
+            // Gestionnaire d'événement pour le formulaire de connexion
+            const loginForm = document.querySelector('#loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleSubmit);
+            }
+
+            // Gestionnaire d'événement pour le bouton de déconnexion
+            const logoutButton = document.querySelector('#logoutButton');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', handleLogout);
+            }
+
+            document.addEventListener('backbutton', function () {
+              // Vérifie si l'utilisateur est déconnecté
+              const loggedIn = localStorage.getItem('userToken') !== null;
+
+              // Si l'utilisateur est déconnecté, redirige vers la page de connexion
+              if (!loggedIn) {
+                window.location.href = '/login';
+              }
+            });
+
+            // Ajoute un gestionnaire d'événement avant le déchargement de la page
+            window.addEventListener('beforeunload', handleBeforeUnload);
+
+            // Met à jour l'état connecté lors du chargement de la page
+            if (loggedIn) {
+                const loggedInMessage = document.createElement('p');
+                loggedInMessage.textContent = 'Vous êtes connecté !';
+                document.body.appendChild(loggedInMessage);
+
+                const logoutButton = document.createElement('button');
+                logoutButton.textContent = 'Déconnexion';
+                logoutButton.addEventListener('click', handleLogout);
+                document.body.appendChild(logoutButton);
+            }
+        });
+-->

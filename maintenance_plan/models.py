@@ -26,7 +26,7 @@ class Equipement (models.Model):
         ('E', 'Electronics'),
     ]
     type = models.CharField(max_length=2, choices=TYPE_CHOICES)
-    installation_date = models.DateField(auto_now=False, auto_now_add=False)
+    installation_date = models.DateField(auto_now=False, auto_now_add=False, null=True, blank=True)
     manufacturer = models.CharField(max_length=50)
     lineId = models.ForeignKey(Lines, on_delete=models.DO_NOTHING) 
     
@@ -35,7 +35,7 @@ class Equipement (models.Model):
     
 class Section(models.Model):
     section_name = models.CharField(max_length=50)
-    description = models.TextField(null=True)
+    description = models.TextField(null=True, blank=True)
     equipement = models.ForeignKey(Equipement, on_delete=models.CASCADE)
     
     def __str__(self):
@@ -51,7 +51,7 @@ class Contributor(models.Model):
 
 class MaintenanceSchedule (models.Model):
     operation = models.CharField(max_length=255)
-    description = models.TextField(null=True)
+    description = models.TextField(null=True, blank=True)
     FREQUENCY_CHOICES = [
         ('Av', 'Avant production'),
         ('AP', 'Après production'),
@@ -70,17 +70,17 @@ class MaintenanceSchedule (models.Model):
         ]
     frequency = models.CharField(max_length=4,
                                  choices=FREQUENCY_CHOICES,
-                                 default='Hebdomadaire'
+                                 default='Hebdomadaire', null=True, blank=True
                                  )
     MODE_CHOICES = [
         ('A', 'Arrêt'),
         ('M', 'Marche'),
         ('M/A', 'Marche/Arrêt'),
     ]
-    mode = models.CharField(max_length=5, choices=MODE_CHOICES, default='Marche/Arrêt')
-    level = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    mode = models.CharField(max_length=5, choices=MODE_CHOICES, default='Marche/Arrêt', null=True, blank=True)
+    level = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], null=True, blank=True)
     type = models.CharField(max_length=10, default='Preventive', validators=[RegexValidator('Preventive')])
-    duration = models.DurationField()
+    duration = models.DurationField(null=True, blank=True)
     INTERVENTION_TYPE_CHOICES = [
         ('N', 'Nettoyage'),
         ('M', 'Maintenance'),
