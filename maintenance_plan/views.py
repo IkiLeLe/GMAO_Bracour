@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.views import generic, View
 from .forms import MaintenanceScheduleFilterForm
@@ -7,6 +8,7 @@ from reportlab.pdfgen import canvas
 import csv
 from django_filters import rest_framework as filters
 from django.shortcuts import get_object_or_404
+
 
 
 from .models import Lines, Equipement, MaintenanceSchedule, Section, Contributor, Contributors
@@ -21,22 +23,6 @@ class LineView(generic.TemplateView):
         context["Equipement_list"] = Equipement.objects.all()
         return context
     # Dans views.py
-
-
-"""
-class MaintenanceScheduleFilter(filters.FilterSet):
-    line = filters.ModelChoiceFilter(field_name='section__equipement__lineId', queryset=Lines.objects.all())
-    equipement = filters.ModelChoiceFilter(field_name='section__equipement', queryset=Equipement.objects.all())
-    frequency = filters.MultipleChoiceFilter(field_name='frequency', choices=MaintenanceSchedule.FREQUENCY_CHOICES)
-    intervention_type = filters.MultipleChoiceFilter(field_name='intervention_type', choices=MaintenanceSchedule.INTERVENTION_TYPE_CHOICES)
-
-    class Meta:
-        model = MaintenanceSchedule
-        fields = ['line', 'equipement', 'frequency', 'intervention_type']
-
-    def get_filtered_queryset(self):
-        return self.qs
-  """     
 
 class MaintenanceScheduleFilter:
     @staticmethod
@@ -227,3 +213,17 @@ class EquipementView(generic.DetailView):
         context['section_data'] = Section.objects.filter(equipement=equipement_instance)
         return context
 """
+"""
+class MaintenanceScheduleFilter(filters.FilterSet):
+    line = filters.ModelChoiceFilter(field_name='section__equipement__lineId', queryset=Lines.objects.all())
+    equipement = filters.ModelChoiceFilter(field_name='section__equipement', queryset=Equipement.objects.all())
+    frequency = filters.MultipleChoiceFilter(field_name='frequency', choices=MaintenanceSchedule.FREQUENCY_CHOICES)
+    intervention_type = filters.MultipleChoiceFilter(field_name='intervention_type', choices=MaintenanceSchedule.INTERVENTION_TYPE_CHOICES)
+
+    class Meta:
+        model = MaintenanceSchedule
+        fields = ['line', 'equipement', 'frequency', 'intervention_type']
+
+    def get_filtered_queryset(self):
+        return self.qs
+  """     

@@ -3,21 +3,19 @@ from maintenance_plan.models import Lines, MaintenanceSchedule
 from .forms import SignupForm, LoginForm
 from django.contrib.auth import logout, authenticate, login
 from django.views.decorators.cache import cache_control
-
+from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout_view(request):
     logout(request)
-    del request.session['userToken']  # Remove the token from the session
-    referer = request.META.get('HTTP_REFERER')
-    if referer and referer.startswith('/login'):
-        return redirect('account:login')
-    return redirect('account:login') 
+    if 'userToken' in request.session:
+        del request.session['userToken']  # Remove the token from the session
+    return redirect('account:login')
+
 
 def index(request):
-    lines = Lines.objects.all
-    
-
+    lines = Lines.objects.all()
     return render(request, 'account/login.html', {
         'lines': lines,
     })
@@ -34,7 +32,7 @@ def signup(request):
             user.position = form.cleaned_data['position']
             user.save()
 
-            return redirect('/login/')
+            return redirect('account/login/')
     else:
         form = SignupForm()
 
@@ -42,25 +40,27 @@ def signup(request):
         'form': form
     })
 
-def login_view(request):  # Add a view for login
+
+def login_view(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST)
+        form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data['CustomUser.username']
-            password = form.cleaned_data['CustomUser.password']
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+
+            # Manually attempt to authenticate the user using the custom user model
             user = authenticate(request, username=username, password=password)
+
             if user is not None:
                 login(request, user)
-                request.session['userToken'] = 'valeur_du_token'  # Store the token in the session
-                return redirect('maintenance_plan:line')  # Redirect to the desired page after login
+                request.session['userToken'] = 'valeur_du_token'
+                return redirect('maintenance_plan:line')
             else:
-                # Handle invalid login attempt
-                return render(request, 'account/login.html', {
-                    'form': form,
-                    'error': 'Invalid username or password',
-                })
+                form.add_error(None, 'Invalid username or password')
+                # The 'None' argument adds a non-field error to the form
+        else:
+            print("Form is invalid:", form.errors)  # Debugging statement
     else:
         form = LoginForm()
-    return render(request, 'account/login.html', {
-        'form': form,
-    })
+
+    return render(request, 'account/login.html', {'form': form})

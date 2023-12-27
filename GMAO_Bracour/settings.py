@@ -42,9 +42,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-LOGIN_URL = '/login/'
+LOGIN_URL = 'account/login/'
 LOGIN_REDIRECT_URL = '/maintenance_plan/'
 LOGOUT_REDIRECT_URL = '/'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'account.backends.CustomUserBackend',  # Adjust the path accordingly
+]
+
+
+AUTH_USER_MODEL = 'account.CustomUser'
 
 
 
