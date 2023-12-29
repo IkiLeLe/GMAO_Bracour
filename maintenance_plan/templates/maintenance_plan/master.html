@@ -86,15 +86,14 @@
           </div>
           
         </footer>
-      
-        
       </div>
       
       <script>
         window.onpageshow = function(event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
+          
+          if (event.persisted) {
+            window.location.reload();
+          }
         };
 
         history.pushState(null, null, document.URL);

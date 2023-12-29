@@ -40,7 +40,7 @@ SECRET_KEY = 'django-insecure-!yb!z80#e0ko51_pi4nik)ttg2g9c60f7u$+*e_2#(+a)a7*os
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 LOGIN_URL = 'account/login/'
 LOGIN_REDIRECT_URL = '/maintenance_plan/'

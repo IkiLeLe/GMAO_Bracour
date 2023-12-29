@@ -98,4 +98,3 @@ class Contributors(models.Model):
     person = models.ForeignKey(Contributor, on_delete=models.DO_NOTHING) 
     schedule = models.ForeignKey(MaintenanceSchedule, on_delete=models.DO_NOTHING) 
     quantity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(20)])
-    

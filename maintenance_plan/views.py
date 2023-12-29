@@ -1,19 +1,19 @@
+from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
 from django.views import generic, View
 from .forms import MaintenanceScheduleFilterForm
 from django.http import JsonResponse, HttpResponse
-from django.template.loader import get_template
 from reportlab.pdfgen import canvas
 import csv
 from django_filters import rest_framework as filters
-from django.shortcuts import get_object_or_404
+
 
 
 
 from .models import Lines, Equipement, MaintenanceSchedule, Section, Contributor, Contributors
  
 # Create your views here.
+@method_decorator(login_required, name='dispatch')
 class LineView(generic.TemplateView):
     template_name = 'maintenance_plan/equiplist.html'
     
@@ -46,6 +46,7 @@ class MaintenanceScheduleFilter:
         return queryset
 
 
+@method_decorator(login_required, name='dispatch')
 class TaskView(generic.ListView):
     template_name = 'maintenance_plan/task.html'
     model = MaintenanceSchedule
@@ -63,6 +64,7 @@ class TaskView(generic.ListView):
     
 
 
+@method_decorator(login_required, name='dispatch')
 class EquipementView(generic.DetailView):
     template_name = 'maintenance_plan/equipdetail.html'
     model = Equipement
@@ -80,6 +82,7 @@ class EquipementView(generic.DetailView):
         return context
 
     
+@method_decorator(login_required, name='dispatch')
 class MaintenanceScheduleDetailView(generic.DetailView):
     model = MaintenanceSchedule
     template_name = 'maintenance_plan/taskdetail.html'
@@ -110,6 +113,7 @@ class ExportCSVView(generic.View):
     
     
 
+@method_decorator(login_required, name='dispatch')
 class ExportPDFView(generic.View):
     def get(self, request, *args, **kwargs):
        
