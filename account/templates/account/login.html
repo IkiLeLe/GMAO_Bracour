@@ -3,8 +3,8 @@
 {% block title %}Log in{% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <div class="col-md-6 my-6 mx-auto p-5 bg-light rounded-xl">
+<div class="container mx-auto my-auto">
+    <div class="col-md-6 my-6 mx-auto p-5 bg-secondary bg-opacity-25 rounded-2">
         <h1 class="mb-6 h3">Log in</h1>
     
         <form method="post" action="{% url 'account:login' %}" id="loginForm">
@@ -27,8 +27,11 @@
                     {% endfor %}
                 </div>
             {% endif %}
-    
-            <button type="submit" class="btn btn-primary">Log in</button>
+            <div class="row justify-content-md-center pt-5">
+                <div class="col-2">
+                    <button type="submit" class="btn btn-outline-danger ">Log in</button>
+                </div>
+            </div>
             <!-- Add this code inside your form tag in login.html -->
             {% if messages %}
             <div class="mb-3 p-3 bg-danger text-white rounded-xl">
