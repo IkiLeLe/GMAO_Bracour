@@ -2,47 +2,70 @@ from collections.abc import Callable, Sequence
 from typing import Any
 from django.contrib import admin
 from django.http.request import HttpRequest
-
-from .models import Lines, Equipement, MaintenanceSchedule, Section, Contributor, Contributors
+from django import forms
+from .models import Lines, Equipement, Part, Document, Contributor, Contributors, PreventiveTask, CleaningTask, LubrificationTask
 # Register your models here.
 
     
 class LinesAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Name', {'fields': ['name']}),
+        ('Detail', {'fields': ['installation_date', 'target']}),
     ]
     
-class SectionInline(admin.TabularInline):
-    model = Section
+class PartInline(admin.TabularInline):
+    model = Part
     extra = 2
+
+class DocumentInline(admin.TabularInline):
+    model = Document.equipement.through  # Use the through model for the ManyToMany relationship
+    extra = 1
  
-   
+class EquipementAdminForm(forms.ModelForm):
+    class Meta:
+        model = Equipement
+        fields = '__all__'
+
 class EquipementAdmin(admin.ModelAdmin):
-     fieldsets = [
-        ('Name', {'fields': ['serial_number', 'name', 'lineId']}),
-        ('Detail', {'fields': ['type', 'installation_date', 'manufacturer']}),
+    form = EquipementAdminForm
+    fieldsets = [
+        ('Name', {'fields': ['lineId', 'serial_number', 'name']}),
+        ('Detail', {'fields': ['installation_date', 'manufacturer']}),
+
         ]
-     inlines = [SectionInline]
-     list_display = ('serial_number', 'name', 'lineId')
+    inlines = [PartInline, DocumentInline]
+    list_display = ('serial_number', 'name', 'lineId')
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        
+        # Handle adding new documents during equipement creation
+        documents = form.cleaned_data.get('documents')
+        if documents:
+            for document in documents:
+                obj.documents.add(document)
+
+
+
     
 class ContributorsInline(admin.TabularInline):
     model = Contributors 
     extra = 3
+    fields = ['person', 'quantity']
 
-class MaintenanceScheduleAdmin(admin.ModelAdmin): 
-     
+class PreventiveTaskAdmin(admin.ModelAdmin): 
      def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'Section':
-            kwargs['queryset'] = Section.objects.select_related('equipement')
+        if db_field.name == 'part':
+            kwargs['queryset'] = Part.objects.select_related('equipement')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
      
      def get_form(self, request, obj=None, **kwargs):
          form = super().get_form(request, obj, **kwargs)
-         form.base_fields['section'].queryset = Section.objects.select_related('equipement')
+         form.base_fields['part'].queryset = Part.objects.select_related('equipement')
          return form
       
      def equipement_serial_number(self, obj):
-         return obj.section.equipement.name
+         return obj.part.equipement.name
          
      def get_fields(self, request, obj=None):
          fields = super().get_fields(request, obj)
@@ -51,17 +74,83 @@ class MaintenanceScheduleAdmin(admin.ModelAdmin):
          return fields
      
      equipement_serial_number.short_description = 'Equipement'
-     list_display = ('operation','section', 'equipement_serial_number')
+     list_display = ('operation','part', 'equipement_serial_number')
      
      fieldsets = [
-         
-        ('Description', {'fields': ['operation', 'description']}),
-        ('Detail', {'fields': ['frequency', 'mode', 'level', 'type', 'duration', 'intervention_type', 'section']}),
+        ('Maintenance préventive', {'fields': ['part', 'operation', 'mode', 'frequency', 'component', 'location', 'criteria', 'description', 'level', 'duration']}),
         ]
      inlines = [ContributorsInline]
     
+class CleaningTaskAdmin(admin.ModelAdmin): 
+     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'part':
+            kwargs['queryset'] = Part.objects.select_related('equipement')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+     
+     def get_form(self, request, obj=None, **kwargs):
+         form = super().get_form(request, obj, **kwargs)
+         form.base_fields['part'].queryset = Part.objects.select_related('equipement')
+         return form
+      
+     def equipement_serial_number(self, obj):
+         return obj.part.equipement.name
+         
+     def get_fields(self, request, obj=None):
+         fields = super().get_fields(request, obj)
+         if obj:
+             fields += ('equipement_serial_number')
+         return fields
+     
+     equipement_serial_number.short_description = 'Equipement'
+     list_display = ('operation','part', 'equipement_serial_number')
+     
+     fieldsets = [
+        ('Nettoyage', {'fields': ['part', 'operation', 'mode', 'frequency', 'component', 'location', 'aids', 'description', 'level', 'duration']}),
+        ]
+     inlines = [ContributorsInline]
+
+class LubrificationTaskAdmin(admin.ModelAdmin):
+     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'part':
+            kwargs['queryset'] = Part.objects.select_related('equipement')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+     
+     def get_form(self, request, obj=None, **kwargs):
+         form = super().get_form(request, obj, **kwargs)
+         form.base_fields['part'].queryset = Part.objects.select_related('equipement')
+         return form
+      
+     def equipement_serial_number(self, obj):
+         return obj.part.equipement.name
+         
+     def get_fields(self, request, obj=None):
+         fields = super().get_fields(request, obj)
+         if obj:
+             fields += ('equipement_serial_number')
+         return fields
+     
+     equipement_serial_number.short_description = 'Equipement'
+     list_display = ('operation','part', 'equipement_serial_number')
+     
+     fieldsets = [
+        ('Lubrification', {'fields': ['part', 'operation', 'mode', 'frequency', 'component', 'location', 'lubrificant', 'quantity', 'description', 'level', 'duration']}),
+        ]
+     inlines = [ContributorsInline]
 
 admin.site.register(Lines, LinesAdmin)
-admin.site.register(MaintenanceSchedule, MaintenanceScheduleAdmin)
+admin.site.register(PreventiveTask, PreventiveTaskAdmin)
 admin.site.register(Equipement, EquipementAdmin)
 admin.site.register(Contributor)
+admin.site.register(Document)
+admin.site.register(CleaningTask, CleaningTaskAdmin)
+admin.site.register(LubrificationTask, LubrificationTaskAdmin)
+'''
+class EquipementAdmin(admin.ModelAdmin):
+     fieldsets = [
+        ('Name', {'fields': ['lineId', 'serial_number', 'name']}),
+        ('Detail', {'fields': ['installation_date', 'manufacturer']}),
+
+        ]
+     inlines = [PartInline, DocumentInline]
+     list_display = ('serial_number', 'name', 'lineId')
+'''

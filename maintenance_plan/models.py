@@ -8,6 +8,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator, RegexVa
 # Create your models here.
 class Lines (models.Model):
     name = models.CharField(max_length=7)
+    installation_date = models.DateField(auto_now=False, auto_now_add=False, null=True, blank=True)
+    target = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     
     class Meta:
         verbose_name_plural = "Lines"
@@ -15,32 +17,33 @@ class Lines (models.Model):
     def __str__(self):
         return self.name
 
+
 class Equipement (models.Model):
     serial_number = models.CharField(max_length=8, primary_key=True)
     name = models.CharField(max_length=50)
-    TYPE_CHOICES = [
-        ('M', 'Machinery'),
-        ('T', 'Tools'),
-        ('V', 'Vehicles'),
-        ('C', 'Computers'),
-        ('E', 'Electronics'),
-    ]
-    type = models.CharField(max_length=2, choices=TYPE_CHOICES)
     installation_date = models.DateField(auto_now=False, auto_now_add=False, null=True, blank=True)
     manufacturer = models.CharField(max_length=50)
+    efficience = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)], null=True, blank=True)
     lineId = models.ForeignKey(Lines, on_delete=models.DO_NOTHING) 
     
     def __str__(self):
         return self.serial_number
     
-class Section(models.Model):
-    section_name = models.CharField(max_length=50)
+class Part(models.Model):
+    part_name = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
     equipement = models.ForeignKey(Equipement, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f'{self.section_name}/{self.equipement}'
+        return f'{self.part_name}/{self.equipement}'
     
+class Document(models.Model):
+    document_name = models.CharField(max_length=50)
+    upload = models.FileField(upload_to='documents/')
+    equipement = models.ManyToManyField(Equipement, blank=True)
+        
+    def __str__(self):
+        return self.document_name
 class Contributor(models.Model):
     contributor_name = models.CharField(max_length=50)
     acronym = models.CharField(max_length=5)
@@ -49,7 +52,7 @@ class Contributor(models.Model):
         return self.contributor_name
     
 
-class MaintenanceSchedule (models.Model):
+class Task (models.Model):
     operation = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     FREQUENCY_CHOICES = [
@@ -66,7 +69,7 @@ class MaintenanceSchedule (models.Model):
         ('4A', 'Chaque 4 ans'),
         ('5A', 'Chaque 5 ans'),
         ('6A', 'Chaque 6 ans'),
-        ('N/A', 'inconnue')
+        ('N/A', 'inconnue'),
         ]
     frequency = models.CharField(max_length=4,
                                  choices=FREQUENCY_CHOICES,
@@ -75,26 +78,48 @@ class MaintenanceSchedule (models.Model):
     MODE_CHOICES = [
         ('A', 'Arrêt'),
         ('M', 'Marche'),
-        ('M/A', 'Marche/Arrêt'),
+        ('AJ', 'Ajustage'),
+        ('CIP', 'CIP'),
+        ('N/A', 'inconnue'),
     ]
     mode = models.CharField(max_length=5, choices=MODE_CHOICES, default='Marche/Arrêt', null=True, blank=True)
     level = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], null=True, blank=True)
-    type = models.CharField(max_length=10, default='Preventive', validators=[RegexValidator('Preventive')])
     duration = models.DurationField(null=True, blank=True)
-    INTERVENTION_TYPE_CHOICES = [
-        ('N', 'Nettoyage'),
-        ('M', 'Maintenance'),
-        ('L', 'Lubrification'),
-    ]
-    intervention_type = models.CharField(max_length=50, choices=INTERVENTION_TYPE_CHOICES, default='Maintenance')
-    section = models.ForeignKey(Section, on_delete=models.DO_NOTHING)
+    tools = models.CharField(max_length=255, null=True, blank=True)
+    component = models.CharField(max_length=75)
+    location = models.CharField(max_length=75)
+    
+    class Meta:
+        abstract = True
+
+class PreventiveTask(Task):
+    criteria = models.CharField(max_length=255, null=True, blank=True)
+    part = models.ForeignKey(Part, on_delete=models.DO_NOTHING)
+    ison = models.ManyToManyField(Contributor, through='Contributors')
+
+    def __str__(self):
+        return self.operation
+    
+class CleaningTask(Task):
+    aids = models.CharField(max_length=255, null=True, blank=True)
+    part = models.ForeignKey(Part, on_delete=models.DO_NOTHING)
     ison = models.ManyToManyField(Contributor, through='Contributors')
 
     def __str__(self):
         return self.operation
 
+class LubrificationTask(Task):
+    lubrificant = models.CharField(max_length=255, null=True, blank=True)
+    quantity = models.IntegerField()
+    part = models.ForeignKey(Part, on_delete=models.DO_NOTHING)
+    ison = models.ManyToManyField(Contributor, through='Contributors')
+
+    def __str__(self):
+        return self.operation
 
 class Contributors(models.Model):
     person = models.ForeignKey(Contributor, on_delete=models.DO_NOTHING) 
-    schedule = models.ForeignKey(MaintenanceSchedule, on_delete=models.DO_NOTHING) 
+    preventive_task = models.ForeignKey(PreventiveTask, on_delete=models.DO_NOTHING, blank=True, null=True)
+    cleaning_task = models.ForeignKey(CleaningTask, on_delete=models.DO_NOTHING, blank=True, null=True)
+    lubrication_task = models.ForeignKey(LubrificationTask, on_delete=models.DO_NOTHING, blank=True, null=True)
     quantity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(20)])
