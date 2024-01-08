@@ -2,178 +2,6 @@
 
 {% block content %}
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-8 bg-light" style="width: 75%; padding: 50px">
-            <nav>
-                <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                  <button class="nav-link active" id="preventivetask" data-bs-toggle="tab" data-bs-target="#nav-preventivetask" type="button" role="tab" aria-controls="nav-preventivetask" aria-selected="true">Preventive</button>
-                  <button class="nav-link" id="cleaningtask" data-bs-toggle="tab" data-bs-target="#nav-cleaningtask" type="button" role="tab" aria-controls="nav-cleaningtask" aria-selected="false">Cleaning</button>
-                  <button class="nav-link" id="lubrificationtask" data-bs-toggle="tab" data-bs-target="#nav-lubrificationtask" type="button" role="tab" aria-controls="nav-lubrificationtask" aria-selected="false">Lubrification</button>
-                </div>
-            </nav>
-            <div class="tab-content" id="nav-tabContent">
-                <div class="tab-pane fade show active" id="nav-preventivetask" role="tabpanel" aria-labelledby="preventivetask" tabindex="0">
-                    <div class="rounded" style="padding: 5px ; background-color: white;"> 
-                        <table class="table table-hover table-striped rounded-4" id="maintenanceTable">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Operation</th>
-                                    <th scope="col">Equipement</th>
-                                    <th scope="col">Line</th>
-                                                         
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for task in task_list %}
-                                <tr data-detail-url="{% url 'maintenance_plan:taskdetail' task.id %}">
-                                    <td>{{ task.operation }}</td>
-                                    <td>{{ task.part.equipement.serial_number }}</td>
-                                    <td>{{ task.part.equipement.lineId }}</td>
-                                 </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="nav-cleaningtask" role="tabpanel" aria-labelledby="cleaningtask" tabindex="0">
-                    <div class="rounded" style="padding: 5px ; background-color: white;"> 
-                        <table class="table table-hover table-striped rounded-4" id="">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Operation</th>
-                                    <th scope="col">Equipement</th>
-                                    <th scope="col">Line</th>
-                                                         
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for task in cleaningtask_list %}
-                                <tr data-detail-url="{% url 'maintenance_plan:taskdetail' task.id %}">
-                                    <td>{{ task.operation }}</td>
-                                    <td>{{ task.part.equipement.serial_number }}</td>
-                                    <td>{{ task.part.equipement.lineId }}</td>
-                                 </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="nav-lubrificationtask" role="tabpanel" aria-labelledby="lubrificationtask" tabindex="0">
-                    <div class="rounded" style="padding: 5px ; background-color: white;"> 
-                        <table class="table table-hover table-striped rounded-4" id="">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Operation</th>
-                                    <th scope="col">Equipement</th>
-                                    <th scope="col">Line</th>
-                                                         
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for task in lubrificationtask_list %}
-                                <tr data-detail-url="{% url 'maintenance_plan:taskdetail' task.id %}">
-                                    <td>{{ task.operation }}</td>
-                                    <td>{{ task.part.equipement.serial_number }}</td>
-                                    <td>{{ task.part.equipement.lineId }}</td>
-                                 </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-           
-
-        <div class="col-md-3 rounded bg-light sticky-top" style="width: 25%; padding: 50px">
-            <h2>Filter</h2>
-            <form method="get" class="form-inline" id="filterForm">
-                {{ filter_form.as_p }}
-                <button type="reset" class="btn btn-secondary">Clear</button><br>
-            </form>
-            <div class="export-buttons mt-3">
-                <a href="{% url 'maintenance_plan:export_csv' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-success export-btn" data-export-type="csv">Export to CSV</a>
-                <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf">Export to PDF</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const filterForm = document.getElementById('filterForm');
-        const formInputs = filterForm.querySelectorAll('input, select');
-        const clearButton = filterForm.querySelector('button[type="reset"]');
-        const exportButtons = document.querySelectorAll('.export-buttons a');
-        const maintenanceTable = document.getElementById('maintenanceTable');
-        
-        // Function to handle form submission
-        function submitForm() {
-            updateExportURL();
-            filterForm.submit();
-        }
-
-        formInputs.forEach(input => {
-            input.addEventListener('change', submitForm);
-        });
-    
-        maintenanceTable.addEventListener('click', function(event) {
-            const clickedRow = event.target.closest('tr');
-            const detailUrl = clickedRow.getAttribute('data-detail-url');
-            if (detailUrl) {
-                window.location.href = detailUrl;
-            }
-        });
-    
-        // Add an event listener for the Clear button
-        clearButton.addEventListener('click', function() {
-            formInputs.forEach(input => {
-                if (input.type !== 'submit' && input.type !== 'reset') {
-                    input.value = '';  // Reset the field value
-                }
-            });
-            submitForm(); // Submit the form after clearing
-        });
-    
-        // Add event listeners for export buttons
-        exportButtons.forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.preventDefault();
-                const exportURL = getExportURL(button.getAttribute('data-export-type'));
-                window.location.href = exportURL;
-            });
-        });
-    
-        // Function to update the export URL with form parameters
-        function updateExportURL() {
-            exportButtons.forEach(button => {
-                const exportURL = getExportURL(button.getAttribute('data-export-type'));
-                button.href = exportURL;
-            });
-        }
-    
-        // Function to get the export URL with form parameters and export type
-        function getExportURL(exportType) {
-            const baseExportURL = exportType === 'pdf' ? "{% url 'maintenance_plan:export_pdf' %}" : "{% url 'maintenance_plan:export_csv' %}";
-            const queryParams = new URLSearchParams();
-            formInputs.forEach(input => {
-                if (input.type === 'checkbox' && input.checked) {
-                    queryParams.append(input.name, input.value);
-                } else if (input.type !== 'checkbox') {
-                    queryParams.append(input.name, input.value);
-                }
-            });
-            return baseExportURL + '?' + queryParams.toString();
-        }
-    });
-</script>
-
-
-    
-{% endblock  %}
-
-<!--
 <div class="container-fluid ">
     
     <div class="row">
@@ -184,25 +12,20 @@
                     <thead>
                         <tr>
                             <th scope="col">Operation</th>
-                            <th scope="col">Partie</th>
                             <th scope="col">Equipement</th>
                             <th scope="col">Line</th>
-                            <th scope="col">Frequency</th>
-                            <th scope="col">Mode</th>
-                            <th scope="col">Level</th>                       
+         
+                      
                         </tr>
                     </thead>
                     <tbody>
-                        {% for MaintenanceSchedule in task_list %}
-                        <tr data-detail-url="{% url 'maintenance_plan:taskdetail' MaintenanceSchedule.id %}">
-                            <td>{{ MaintenanceSchedule.operation }}</td>
-                            <td>{{ MaintenanceSchedule.part.part_name }}</td>
-                            <td>{{ MaintenanceSchedule.part.equipement.serial_number }}</td>
-                            <td>{{ MaintenanceSchedule.part.equipement.lineId }}</td>
-                            <td>{{ MaintenanceSchedule.get_frequency_display }}</td>
-                            <td>{{ MaintenanceSchedule.get_mode_display }}</td>
-                            <td>{{ MaintenanceSchedule.level }}</td>
-                                              
+                        {% for PreventiveTask in task_list %}
+                        <tr data-detail-url="">
+                            <td>{{ PreventiveTask.operation }}</td>
+                            <td>{{ PreventiveTask.part.equipement.serial_number }}</td>
+                            <td>{{ PreventiveTask.part.equipement.lineId }}</td>
+                       
+                        
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -224,6 +47,9 @@
 
     </div>
 </div>
+
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const filterForm = document.getElementById('filterForm');
@@ -231,39 +57,14 @@
         const clearButton = filterForm.querySelector('button[type="reset"]');
         const exportButtons = document.querySelectorAll('.export-buttons a');
         const maintenanceTable = document.getElementById('maintenanceTable');
-        const myTabs = new bootstrap.Tabset(document.getElementById('myTabs'));
-
-        myTabs.on('tab.bs.tab', function (e) {
-            const taskType = e.relatedTarget.getAttribute('data-task-type');
-            const taskTabContent = document.getElementById(`${taskType}Tasks`);
-            loadTaskTable(taskType, taskTabContent);
-        });
-
-        function loadTaskTable(taskType, taskTabContent) {
-            // Fetch the data using AJAX and update the taskTabContent
-            // For simplicity, I'm using jQuery for AJAX, but you can use any library or plain JavaScript
-            $.ajax({
-                url: `/get_${taskType}_tasks/`,  // Adjust the URL endpoint according to your Django views
-                type: 'GET',
-                data: filterForm.serialize(),
-                success: function(data) {
-                    taskTabContent.innerHTML = data;
-                },
-                error: function(error) {
-                    console.error('Error fetching tasks:', error);
-                }
-            });
-        }
-
-        myTabs.show(document.getElementById('preventiveTab'));
-
-        // ... rest of your existing JavaScript code
     
         formInputs.forEach(input => {
             input.addEventListener('change', function() {
+                console.log('change');
                 // Simuler la soumission du formulaire
                 updateExportURL();
                 filterForm.submit();
+                event.preventDefault();
             });
         });
 
@@ -302,11 +103,10 @@
         // Fonction pour mettre à jour l'URL d'exportation avec les paramètres du formulaire
         function updateExportURL() {
             exportButtons.forEach(button => {
-                const originalHref = button.getAttribute('data-original-href');
                 const exportURL = getExportURL(button.getAttribute('data-export-type'));
                 button.setAttribute('href', exportURL);
             });
-        }
+}
 
         // Fonction pour obtenir l'URL d'exportation avec les paramètres du formulaire et le type d'exportation
         function getExportURL(exportType) {
@@ -329,7 +129,4 @@
 
 
 </script>
-
-
-
--->
+{% endblock %}
