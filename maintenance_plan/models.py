@@ -33,17 +33,13 @@ class Part(models.Model):
     part_name = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
     equipement = models.ForeignKey(Equipement, on_delete=models.CASCADE)
+    document_name = models.CharField(max_length=50, null=True, blank=True)
+    upload = models.FileField(upload_to='documents/', null=True, blank=True)
     
     def __str__(self):
         return f'{self.part_name}/{self.equipement}'
     
-class Document(models.Model):
-    document_name = models.CharField(max_length=50)
-    upload = models.FileField(upload_to='documents/')
-    equipement = models.ManyToManyField(Equipement, blank=True)
-        
-    def __str__(self):
-        return self.document_name
+
 class Contributor(models.Model):
     contributor_name = models.CharField(max_length=50)
     acronym = models.CharField(max_length=5)
@@ -110,7 +106,6 @@ class CleaningTask(Task):
 
 class LubrificationTask(Task):
     lubrificant = models.CharField(max_length=255, null=True, blank=True)
-    quantity = models.IntegerField()
     part = models.ForeignKey(Part, on_delete=models.DO_NOTHING)
     ison = models.ManyToManyField(Contributor, through='Contributors')
 

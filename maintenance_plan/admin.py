@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib import admin
 from django.http.request import HttpRequest
 from django import forms
-from .models import Lines, Equipement, Part, Document, Contributor, Contributors, PreventiveTask, CleaningTask, LubrificationTask
+from .models import Lines, Equipement, Part, Contributor, Contributors, PreventiveTask, CleaningTask, LubrificationTask
 # Register your models here.
 
     
@@ -17,9 +17,6 @@ class PartInline(admin.TabularInline):
     model = Part
     extra = 2
 
-class DocumentInline(admin.TabularInline):
-    model = Document.equipement.through  # Use the through model for the ManyToMany relationship
-    extra = 1
  
 class EquipementAdminForm(forms.ModelForm):
     class Meta:
@@ -33,17 +30,11 @@ class EquipementAdmin(admin.ModelAdmin):
         ('Detail', {'fields': ['installation_date', 'manufacturer']}),
 
         ]
-    inlines = [PartInline, DocumentInline]
+    inlines = [PartInline]
     list_display = ('serial_number', 'name', 'lineId')
 
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
+    
         
-        # Handle adding new documents during equipement creation
-        documents = form.cleaned_data.get('documents')
-        if documents:
-            for document in documents:
-                obj.documents.add(document)
 
 
 
@@ -141,7 +132,6 @@ admin.site.register(Lines, LinesAdmin)
 admin.site.register(PreventiveTask, PreventiveTaskAdmin)
 admin.site.register(Equipement, EquipementAdmin)
 admin.site.register(Contributor)
-admin.site.register(Document)
 admin.site.register(CleaningTask, CleaningTaskAdmin)
 admin.site.register(LubrificationTask, LubrificationTaskAdmin)
 '''

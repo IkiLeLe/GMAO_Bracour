@@ -2,41 +2,94 @@
 
 {% block content %}
 
-<div class="container-fluid ">
-    
+<div class="container-fluid">
     <div class="row">
         <div class="col-md-8 bg-light" style="width: 75%; padding: 50px">
-            <h1 class="display-4 text-center text-custom" style="font-size: 50px; font-weight: bold; color: #E03915;">Maintenance Schedule</h1>
-            <div class="rounded" style="padding: 5px ; background-color: white;"> 
-                <table class="table table-hover table-striped rounded-4" id="maintenanceTable">
-                    <thead>
-                        <tr>
-                            <th scope="col">Operation</th>
-                            <th scope="col">Equipement</th>
-                            <th scope="col">Line</th>
-         
-                      
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for PreventiveTask in task_list %}
-                        <tr data-detail-url="">
-                            <td>{{ PreventiveTask.operation }}</td>
-                            <td>{{ PreventiveTask.part.equipement.serial_number }}</td>
-                            <td>{{ PreventiveTask.part.equipement.lineId }}</td>
-                       
-                        
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <button class="nav-link active tab-button" id="preventivetask" data-bs-toggle="tab" data-bs-target="#nav-preventivetask" type="button" role="tab" aria-controls="nav-preventivetask" aria-selected="true">Preventive</button>
+                    <button class="nav-link tab-button" id="cleaningtask" data-bs-toggle="tab" data-bs-target="#nav-cleaningtask" type="button" role="tab" aria-controls="nav-cleaningtask" aria-selected="false">Cleaning</button>
+                    <button class="nav-link tab-button" id="lubrificationtask" data-bs-toggle="tab" data-bs-target="#nav-lubrificationtask" type="button" role="tab" aria-controls="nav-lubrificationtask" aria-selected="false">Lubrification</button>
+                </div>
+            </nav>
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="nav-preventivetask" role="tabpanel" aria-labelledby="preventivetask" tabindex="0">
+                    <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                        <table class="table table-hover table-striped rounded-4" id="maintenanceTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Operation</th>
+                                    <th scope="col">Equipement</th>
+                                    <th scope="col">Line</th>
+                                                         
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks.preventive_tasks %}
+                                <tr data-detail-url="{% url 'maintenance_plan:taskdetail' task.id %}">
+                                    <td>{{ task.operation }}</td>
+                                    <td>{{ task.part.equipement.serial_number }}</td>
+                                    <td>{{ task.part.equipement.lineId }}</td>
+                                 </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="nav-cleaningtask" role="tabpanel" aria-labelledby="cleaningtask" tabindex="0">
+                    <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                        <table class="table table-hover table-striped rounded-4" id="">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Operation</th>
+                                    <th scope="col">Equipement</th>
+                                    <th scope="col">Line</th>
+                                                         
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks.cleaning_tasks %}
+                                <tr data-detail-url="">
+                                    <td>{{ task.operation }}</td>
+                                    <td>{{ task.part.equipement.serial_number }}</td>
+                                    <td>{{ task.part.equipement.lineId }}</td>
+                                 </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="nav-lubrificationtask" role="tabpanel" aria-labelledby="lubrificationtask" tabindex="0">
+                    <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                        <table class="table table-hover table-striped rounded-4" id="">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Operation</th>
+                                    <th scope="col">Equipement</th>
+                                    <th scope="col">Line</th>
+                                                         
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks.lubrification_tasks %}
+                                <tr data-detail-url="">
+                                    <td>{{ task.operation }}</td>
+                                    <td>{{ task.part.equipement.serial_number }}</td>
+                                    <td>{{ task.part.equipement.lineId }}</td>
+                                 </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
+           
 
-        <div class="col-md-4 rounded bg-light sticky-top" style="width: 25%; padding: 50px">
+        <div class="col-md-3 rounded bg-light sticky-top" style="width: 25%; padding: 50px">
             <h2>Filter</h2>
             <form method="get" class="form-inline" id="filterForm">
-                {{ filter_form.as_p }}
+                {{ form.as_p }}
                 <button type="reset" class="btn btn-secondary">Clear</button><br>
             </form>
             <div class="export-buttons mt-3">
@@ -44,7 +97,6 @@
                 <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf">Export to PDF</a>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -57,6 +109,7 @@
         const clearButton = filterForm.querySelector('button[type="reset"]');
         const exportButtons = document.querySelectorAll('.export-buttons a');
         const maintenanceTable = document.getElementById('maintenanceTable');
+        const activeTab = localStorage.getItem('activeTab');
     
         formInputs.forEach(input => {
             input.addEventListener('change', function() {
@@ -111,6 +164,7 @@
         // Fonction pour obtenir l'URL d'exportation avec les paramètres du formulaire et le type d'exportation
         function getExportURL(exportType) {
             const baseExportURL = exportType === 'pdf' ? "{% url 'maintenance_plan:export_pdf' %}" : "{% url 'maintenance_plan:export_csv' %}";
+            const activeTab = document.querySelector('.tab-pane.active').id;
             const queryParams = new URLSearchParams();
             formInputs.forEach(input => {
                 if (input.type === 'checkbox') {
@@ -123,8 +177,27 @@
                     queryParams.append(input.name, input.value);
                 }
             });
+            // Ajoutez l'onglet actif aux paramètres de la requête
+            queryParams.append('active_tab', activeTab);
             return baseExportURL + '?' + queryParams.toString();
         }
+
+               // Si un onglet est stocké, activez-le
+               if (activeTab) {
+            const tabButton = document.querySelector(`.tab-button[data-bs-target="${activeTab}"]`);
+            if (tabButton) {
+                tabButton.click();
+            }
+        }
+
+        // Ajoutez un gestionnaire d'événements pour stocker l'onglet actif lorsqu'il est changé
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Stockez l'ID de l'onglet actif dans les données locales du navigateur
+                localStorage.setItem('activeTab', button.getAttribute('data-bs-target'));
+            });
+        });
     });
 
 

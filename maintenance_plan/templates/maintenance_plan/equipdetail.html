@@ -14,8 +14,6 @@
                         <div class="col">: {{ object.name }}</div>
                         <div class="col">Serial number</div>
                         <div class="col">: {{ object.serial_number }}</div>
-                        <div class="col">Type</div>
-                        <div class="col">: {{ object.get_type_display }}</div>
                         <div class="col">Installation date</div>
                         <div class="col">: {{ object.installation_date }}</div>
                         <div class="col">Line</div>
@@ -25,32 +23,60 @@
             </div>
         </div>
         <div class="col-8">
-            <div><h1 class="display-5">Sections</h1></div>
+            <div><h1 class="display-5">Part</h1></div>
 
             <div class="row">
                 <div class="col-4">
                   <div class="list-group" id="list-tab" role="tablist">
-                    {% for section in section_data %}
-                      <a class="list-group-item list-group-item-action {% if forloop.first %}active{% endif %}" id="list-{{ section.id }}-list" data-bs-toggle="list" href="#list-{{ section.id }}" role="tab" aria-controls="list-{{ section.id }}">{{ section.section_name }}</a>
+                    {% for part in section_data %}
+                      <a class="list-group-item list-group-item-action {% if forloop.first %}active{% endif %}" id="list-{{ part.id }}-list" data-bs-toggle="list" href="#list-{{ part.id }}" role="tab" aria-controls="list-{{ part.id }}">{{ part.part_name }}</a>
                     {% endfor %}
                   </div>
                 </div>
                 <div class="col-8">
                   <div class="tab-content" id="nav-tabContent">
                     <strong>Description</strong><br>
-                    {% for section in section_data %}
-                      <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="list-{{ section.id }}" role="tabpanel" aria-labelledby="list-{{ section.id }}-list">
-                            <p>{{ section.description }}</p>
-                            <strong>Tasks</strong><br>
-                            {% for maintenance_schedule in maintenance_schedules %}
-                                {% if maintenance_schedule.section.id == section.id %}
-                                 <p>{{ maintenance_schedule.operation }}</p>
-                                {% endif %}
-                            {% endfor %}
-                      </div>
-                     
-
-                      
+                    {% for part in section_data %}
+                      <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="list-{{ part.id }}" role="tabpanel" aria-labelledby="list-{{ part.id }}-list">
+                        <p>{{ part.description }}</p>
+                        <strong>Tasks</strong><br>
+                        <nav>
+                          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                              <button class="nav-link active tab-button" id="preventivetask" data-bs-toggle="tab" data-bs-target="#nav-preventivetask" type="button" role="tab" aria-controls="nav-preventivetask" aria-selected="true">Preventive</button>
+                              <button class="nav-link tab-button" id="cleaningtask" data-bs-toggle="tab" data-bs-target="#nav-cleaningtask" type="button" role="tab" aria-controls="nav-cleaningtask" aria-selected="false">Cleaning</button>
+                              <button class="nav-link tab-button" id="lubrificationtask" data-bs-toggle="tab" data-bs-target="#nav-lubrificationtask" type="button" role="tab" aria-controls="nav-lubrificationtask" aria-selected="false">Lubrification</button>
+                          </div>
+                        </nav>   
+                        <div class="tab-content" id="nav-tabContent">
+                          <div class="tab-pane fade show active" id="nav-preventivetask" role="tabpanel" aria-labelledby="preventivetask" tabindex="0">
+                              <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                                {% for task in preventive_tasks %}
+                                  {% if task.part.id == part.id %}
+                                    <p>{{ task.operation }}</p>
+                                  {% endif %}
+                                {% endfor %}
+                              </div>
+                          </div>
+                          <div class="tab-pane fade" id="nav-cleaningtask" role="tabpanel" aria-labelledby="cleaningtask" tabindex="0">
+                              <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                                {% for task in cleaning_tasks %}
+                                  {% if task.part.id == part.id %}
+                                    <p>{{ task.operation }}</p>
+                                  {% endif %}
+                                {% endfor %}
+                              </div>
+                          </div>
+                          <div class="tab-pane fade" id="nav-lubrificationtask" role="tabpanel" aria-labelledby="lubrificationtask" tabindex="0">
+                              <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                                {% for task in lubrification_tasks %}
+                                  {% if task.part.id == part.id %}
+                                    <p>{{ task.operation }}</p>
+                                  {% endif %}
+                                {% endfor %}
+                              </div>
+                          </div>
+                        </div> 
+                      </div>                    
                     {% endfor %}
                   </div>
                 </div>
