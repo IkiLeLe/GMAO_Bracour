@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from maintenance_plan.models import Lines, MaintenanceSchedule
+from maintenance_plan.models import Lines
 from .forms import SignupForm, LoginForm
 from django.contrib.auth import logout, authenticate, login
 from django.views.decorators.cache import cache_control
