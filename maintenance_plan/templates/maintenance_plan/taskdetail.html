@@ -5,13 +5,21 @@
 <h1 class="">Hello! this is the task detail page </h1>
 <div>
     Operation           : {{ object.operation }}<br>
-    Section             : {{ object.section }}<br>
-    Type                : {{ object.type }}<br>
+    part                : {{ object.part }}<br>
     Frequency           : {{ object.get_frequency_display }}<br>
     Mode                : {{ object.get_mode_display }}<br>
     Duration            : {{ object.duration }}<br>
     Intervention Type   : {{ object.get_intervention_type_display }}<br>
     Description         : <p>{{ object.description }}</p><br>
+    
+    {% if object.get_model_name == 'PreventiveTask' %}
+        Criteria            : {{ object.criteria }}<br>
+    {% elif object.get_model_name == 'CleaningTask' %}
+        Aids                : {{ object.aids }}<br>
+    {% elif object.get_model_name == 'LubrificationTask' %}
+        Lubricant           : {{ object.lubricant }}<br>
+    {% endif %}
+
     Contributors
     <ul>
         {% for contributor in contributors %}

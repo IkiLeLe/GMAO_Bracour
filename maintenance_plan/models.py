@@ -88,6 +88,9 @@ class Task (models.Model):
     class Meta:
         abstract = True
 
+    def get_model_name(self):
+        return self.__class__.__name__
+
 class PreventiveTask(Task):
     criteria = models.CharField(max_length=255, null=True, blank=True)
     part = models.ForeignKey(Part, on_delete=models.DO_NOTHING)

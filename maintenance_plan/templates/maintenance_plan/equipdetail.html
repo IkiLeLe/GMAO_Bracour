@@ -39,43 +39,48 @@
                     {% for part in section_data %}
                       <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="list-{{ part.id }}" role="tabpanel" aria-labelledby="list-{{ part.id }}-list">
                         <p>{{ part.description }}</p>
+                        {% if part.upload %}
+                          <p><a href="{{ part.upload.url }}" target="_blank">Voir le document</a></p>
+                        {% endif %}
                         <strong>Tasks</strong><br>
-                        <nav>
-                          <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                              <button class="nav-link active tab-button" id="preventivetask" data-bs-toggle="tab" data-bs-target="#nav-preventivetask" type="button" role="tab" aria-controls="nav-preventivetask" aria-selected="true">Preventive</button>
-                              <button class="nav-link tab-button" id="cleaningtask" data-bs-toggle="tab" data-bs-target="#nav-cleaningtask" type="button" role="tab" aria-controls="nav-cleaningtask" aria-selected="false">Cleaning</button>
-                              <button class="nav-link tab-button" id="lubrificationtask" data-bs-toggle="tab" data-bs-target="#nav-lubrificationtask" type="button" role="tab" aria-controls="nav-lubrificationtask" aria-selected="false">Lubrification</button>
-                          </div>
-                        </nav>   
-                        <div class="tab-content" id="nav-tabContent">
-                          <div class="tab-pane fade show active" id="nav-preventivetask" role="tabpanel" aria-labelledby="preventivetask" tabindex="0">
-                              <div class="rounded" style="padding: 5px ; background-color: white;"> 
-                                {% for task in preventive_tasks %}
-                                  {% if task.part.id == part.id %}
-                                    <p>{{ task.operation }}</p>
-                                  {% endif %}
-                                {% endfor %}
-                              </div>
-                          </div>
-                          <div class="tab-pane fade" id="nav-cleaningtask" role="tabpanel" aria-labelledby="cleaningtask" tabindex="0">
-                              <div class="rounded" style="padding: 5px ; background-color: white;"> 
-                                {% for task in cleaning_tasks %}
-                                  {% if task.part.id == part.id %}
-                                    <p>{{ task.operation }}</p>
-                                  {% endif %}
-                                {% endfor %}
-                              </div>
-                          </div>
-                          <div class="tab-pane fade" id="nav-lubrificationtask" role="tabpanel" aria-labelledby="lubrificationtask" tabindex="0">
-                              <div class="rounded" style="padding: 5px ; background-color: white;"> 
-                                {% for task in lubrification_tasks %}
-                                  {% if task.part.id == part.id %}
-                                    <p>{{ task.operation }}</p>
-                                  {% endif %}
-                                {% endfor %}
-                              </div>
-                          </div>
-                        </div> 
+                        <div>
+                          <nav>
+                            <div class="nav nav-tabs" id="nav-tab-{{ part.id }}" role="tablist">
+                                <button class="nav-link active tab-button" id="preventivetask-{{ part.id }}" data-bs-toggle="tab" data-bs-target="#nav-preventivetask-{{ part.id }}" type="button" role="tab" aria-controls="nav-preventivetask-{{ part.id }}" aria-selected="true">Preventive</button>
+                                <button class="nav-link tab-button" id="cleaningtask-{{ part.id }}" data-bs-toggle="tab" data-bs-target="#nav-cleaningtask-{{ part.id }}" type="button" role="tab" aria-controls="nav-cleaningtask-{{ part.id }}" aria-selected="false">Cleaning</button>
+                                <button class="nav-link tab-button" id="lubrificationtask-{{ part.id }}" data-bs-toggle="tab" data-bs-target="#nav-lubrificationtask-{{ part.id }}" type="button" role="tab" aria-controls="nav-lubrificationtask-{{ part.id }}" aria-selected="false">Lubrification</button>
+                            </div>
+                          </nav>   
+                          <div class="tab-content" id="nav-tabContent-{{ part.id }}">
+                            <div class="tab-pane fade show active" id="nav-preventivetask-{{ part.id }}" role="tabpanel" aria-labelledby="preventivetask-{{ part.id }}" tabindex="0">
+                                <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                                  {% for task in preventive_tasks %}
+                                    {% if task.part.id == part.id %}
+                                      <p>{{ task.operation }}</p>
+                                    {% endif %}
+                                  {% endfor %}
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-cleaningtask-{{ part.id }}" role="tabpanel" aria-labelledby="cleaningtask-{{ part.id }}" tabindex="0">
+                                <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                                  {% for task in cleaning_tasks %}
+                                    {% if task.part.id == part.id %}
+                                      <p>{{ task.operation }}</p>
+                                    {% endif %}
+                                  {% endfor %}
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-lubrificationtask-{{ part.id }}" role="tabpanel" aria-labelledby="lubrificationtask-{{ part.id }}" tabindex="0">
+                                <div class="rounded" style="padding: 5px ; background-color: white;"> 
+                                  {% for task in lubrification_tasks %}
+                                    {% if task.part.id == part.id %}
+                                      <p>{{ task.operation }}</p>
+                                    {% endif %}
+                                  {% endfor %}
+                                </div>
+                            </div>
+                          </div> 
+                        </div>
                       </div>                    
                     {% endfor %}
                   </div>

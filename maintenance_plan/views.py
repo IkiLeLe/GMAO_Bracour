@@ -1,13 +1,12 @@
+from django.shortcuts import get_object_or_404, render
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.views import generic, View
 from .forms import MaintenanceScheduleFilterForm
-from django.http import JsonResponse, HttpResponse, FileResponse
+from django.http import JsonResponse, HttpResponse, FileResponse, Http404
 import io
-from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import landscape, letter
-import reportlab.lib.pagesizes as pagesizes
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import BaseDocTemplate, Table, TableStyle, PageTemplate, Frame, Spacer, Paragraph, Image, PageBreak, LongTable
 from reportlab.lib.units import inch
@@ -48,15 +47,31 @@ class EquipementView(generic.DetailView):
 
     
 @method_decorator(login_required, name='dispatch')
-class MaintenanceScheduleDetailView(generic.DetailView):
-    model = PreventiveTask
+class TaskDetailView(generic.DetailView):
     template_name = 'maintenance_plan/taskdetail.html'
-    context_object_name = 'schedule'
+
+    def get_object(self, queryset=None):
+        task_type = self.kwargs['task_type']
+        task_id = self.kwargs['task_id']
+
+        if task_type == 'preventive':
+            task = get_object_or_404(PreventiveTask, id=task_id)
+        elif task_type == 'cleaning':
+            task = get_object_or_404(CleaningTask, id=task_id)
+        elif task_type == 'lubrification':
+            task = get_object_or_404(LubrificationTask, id=task_id)
+        else:
+            # Ajoutez une gestion d'erreur appropriée ici
+            task = None  # Ou une autre valeur par défaut
+
+        return task
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['task_type'] = self.kwargs['task_type']
         context['contributors'] = self.object.ison.all()
         return context
+
 
 def get_filtered_tasks(request):
     form = MaintenanceScheduleFilterForm(request.GET)
@@ -424,6 +439,3 @@ class HeaderFrame:
             element.wrapOn(self.canvas, self.doc.width, self.doc.topMargin)
             element.drawOn(self.canvas, self.doc.leftMargin, y_position - element.height)
             y_position -= element.height/2 # Adjust spacing if needed
-    
-        
-
