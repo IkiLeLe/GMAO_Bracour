@@ -171,7 +171,7 @@ class ExportCSVView(generic.View):
 
         return response
 
-def split_text(text, max_length=1400):
+def split_text(text, max_length=1350):
     """
     Split text into parts with a maximum length without cutting words.
     """
@@ -328,7 +328,7 @@ class ExportPDFView(View):
 
 
             table.setStyle(style)
-            table._argH[1] = 300
+            table._argH[1] = 275
             content.append(Spacer(1, 0.5*inch))
             content.append(text_table)
             content.extend(text_lines)

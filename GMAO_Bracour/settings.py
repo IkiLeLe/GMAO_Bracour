@@ -10,19 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 
 DATABASES = {
-    "default": {
-        "ENGINE": "mssql",
-        "NAME": "GMAO_Bracour",
-        "USER": "sa",
-        "PASSWORD": "Production,123",
-        "HOST": "localhost",
-        "PORT": "1433",
-        "OPTIONS": {"driver": "ODBC Driver 17 for SQL Server", 
-        },
-    },
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
-
+'MARS_Connection': True,
+            'autocommit': True,
 """
 
 from pathlib import Path
@@ -103,16 +98,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'GMAO_Bracour.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# settings.py
+# Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'mssql',
+        'NAME': 'GMAO_Bracour',
+        'USER': 'sa',
+        'PASSWORD': 'Production,123',
+        'HOST': 'localhost',
+        'PORT': '1433',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+        },
     }
 }
+
 
 
 

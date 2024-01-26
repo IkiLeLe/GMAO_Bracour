@@ -93,7 +93,7 @@ class Task (models.Model):
 
 class PreventiveTask(Task):
     criteria = models.CharField(max_length=255, null=True, blank=True)
-    part = models.ForeignKey(Part, on_delete=models.DO_NOTHING)
+    part = models.ForeignKey(Part, on_delete=models.CASCADE)
     ison = models.ManyToManyField(Contributor, through='Contributors')
 
     def __str__(self):
