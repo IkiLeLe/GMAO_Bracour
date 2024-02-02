@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth import authenticate
 from .models import CustomUser
 
 class LoginForm(AuthenticationForm):
@@ -50,3 +52,41 @@ class SignupForm(UserCreationForm):
         'placeholder': 'Your position',
         'class': 'form-control'
     }))
+
+class EditProfileForm(UserChangeForm):
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder': 'Your current password',
+        'class': 'form-control'
+    }))
+
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'username', 'position', 'email']
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+
+        # Vérifier que le mot de passe actuel est correct
+        user = authenticate(username=self.instance.username, password=password)
+        if not user:
+            raise forms.ValidationError('Incorrect current password.')
+
+        return password
+    
+'''
+ # Champs de changement de mot de passe
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder': 'Your current password',
+        'class': 'form-control'
+    }), required=False)  # Le mot de passe actuel n'est pas obligatoire, mais recommandé
+    
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder': 'New password',
+        'class': 'form-control'
+    }), required=False)
+
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder': 'Repeat new password',
+        'class': 'form-control'
+    }), required=False)
+'''

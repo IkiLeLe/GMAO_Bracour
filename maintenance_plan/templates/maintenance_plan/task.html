@@ -85,22 +85,38 @@
             </div>
         </div>
            
-
-        <div class="col-md-3 rounded bg-light sticky-top" style="width: 25%; padding: 50px">
-            <h2>Filter</h2>
-            <form method="get" class="form-inline" id="filterForm">
-                {{ form.as_p }}
-                <button type="reset" class="btn btn-secondary">Clear</button><br>
-            </form>
-            <div class="export-buttons mt-3">
-                <a href="{% url 'maintenance_plan:export_csv' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-success export-btn" data-export-type="csv">Export to CSV</a>
-                <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf">Export to PDF</a>
+        <div class="col-md-3 rounded bg-light " style="width: 25%; padding: 50px">
+            <div class="sticky-top">
+                <h2>Filter</h2>
+                <form method="get" class="form-inline" id="filterForm">
+                    {{ form.as_p }}
+                    <button type="reset" class="btn btn-secondary">Clear</button><br>
+                </form>
+                <div class="export-buttons mt-3">
+                    <a href="{% url 'maintenance_plan:export_csv' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-success export-btn" data-export-type="csv">Export to CSV</a>
+                    <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf">Export to PDF</a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-
+<div class="modal fade" id="taskDetailModal" tabindex="-1" aria-labelledby="taskDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskDetailModalLabel">Task Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="taskDetailModalBody">
+                <!-- Les détails de la tâche seront ajoutés ici via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -128,10 +144,22 @@
                 const detailUrl = clickedRow.getAttribute('data-detail-url');
                 console.log('Detail URL:', detailUrl);
                 if (detailUrl) {
-                    window.location.href = detailUrl;
+                    // Affichez les détails dans un modal
+                    fetch(detailUrl)
+                        .then(response => response.text())
+                        .then(data => {
+                            // Créez un modal avec les détails récupérés
+                            const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
+                            const modalBody = document.getElementById('taskDetailModalBody');
+                            modalBody.innerHTML = data;
+                            modal.show();
+                        })
+                        .catch(error => {
+                            console.error('Error fetching task details:', error);
+                        });
                 }
             });
-        });
+        })
     
         // Ajoutez un gestionnaire d'événements pour le bouton Clear
         clearButton.addEventListener('click', function() {
@@ -203,7 +231,20 @@
             });
         });
     });
-
-
 </script>
 {% endblock %}
+
+<!--
+        maintenanceTables.forEach(function(tableElement) {
+            // Ajoutez un gestionnaire d'événements de clic à chaque tableau
+            tableElement.addEventListener('click', function(event) {
+                const clickedRow = event.target.closest('tr');
+                const detailUrl = clickedRow.getAttribute('data-detail-url');
+                console.log('Detail URL:', detailUrl);
+                if (detailUrl) {
+                    window.location.href = detailUrl;
+                }
+            });
+        });
+
+-->

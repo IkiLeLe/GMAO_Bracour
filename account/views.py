@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from maintenance_plan.models import Lines
-from .forms import SignupForm, LoginForm
+from .forms import SignupForm, LoginForm, EditProfileForm
 from django.contrib.auth import logout, authenticate, login
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.hashers import check_password
 from django.views.decorators.cache import cache_control
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
@@ -32,7 +35,7 @@ def signup(request):
             user.position = form.cleaned_data['position']
             user.save()
 
-            return redirect('account/login/')
+            return redirect('account:login')
     else:
         form = SignupForm()
 
@@ -65,3 +68,37 @@ def login_view(request):
 
     return render(request, 'account/login.html', {'form': form})
 
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, instance=request.user)
+
+        if form.is_valid():
+            # Le formulaire est valide, enregistrer les modifications
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('account:edit_profile')
+        else:
+            messages.error(request, 'Error updating your profile. Please correct the errors below.')
+    else:
+        form = EditProfileForm(instance=request.user)
+
+    return render(request, 'account/edit_profile.html', {'form': form})
+
+@login_required
+def password_change(request):
+    if request.method == 'POST':
+        password_form = PasswordChangeForm(user=request.user, data=request.POST)
+
+        if password_form.is_valid():
+            password_form.save()
+
+            messages.success(request, 'Your password have been updated successfully.')
+            return redirect('maintenance_plan:line')
+        else:
+            messages.error(request, 'Error updating your password. Please correct the errors below.')
+
+    else:
+        password_form = PasswordChangeForm(user=request.user)
+
+    return render(request, 'account/edit_password.html', {'password_form': password_form})

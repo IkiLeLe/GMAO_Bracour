@@ -2,16 +2,17 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid p-3">
     <div class="row">
         {% for line in Line_list %}
-            <div class="col mb-3">
-                <h1 class="display-6">{{ line.name }}</h1>
-                <ul class="list-group">
+            <div class="col mb-3" >
+                <h1 class="display-7 rounded-3 me-6" style="padding: 10px; color: rgb(119, 39, 39) ; background-color:rgb(230, 170, 170)"
+                >{{ line.name }}</h1>
+                <ul class="list-group" >
                     {% for equipment in Equipement_list %}
                         {% if equipment.lineId_id == line.id %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a href="{% url 'maintenance_plan:detail' equipment.serial_number %}">
+                            <li class="list-group-item d-flex justify-content-between align-items-center" style="padding: 10px; background-color:rgb(230, 170, 170)" >
+                                <a href="{% url 'maintenance_plan:detail' equipment.serial_number %}" style="text-decoration: none; color: inherit;" onmouseover="this.style.color='rgb(175, 65, 65)';" onmouseout="this.style.color='inherit';">
                                     {{ equipment.serial_number }}-{{ equipment.name }}
                                 </a>
                             </li>

@@ -1,46 +1,38 @@
-{% extends "maintenance_plan/master.html" %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}{% endblock %}</title>
+        <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, post-check=0, pre-check=0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+        
+      </head>
 
-{% block content %}
+      <body>
+        <div>
+            Operation           : {{ object.operation }}<br>
+            part                : {{ object.part }}<br>
+            Frequency           : {{ object.get_frequency_display }}<br>
+            Mode                : {{ object.get_mode_display }}<br>
+            Duration            : {{ object.duration }}<br>
+            Intervention Type   : {{ object.get_intervention_type_display }}<br>
+            Description         : <p>{{ object.description|linebreaks|safe }}</p><br>
+            
+            {% if object.get_model_name == 'PreventiveTask' %}
+                Criteria            : {{ object.criteria }}<br>
+            {% elif object.get_model_name == 'CleaningTask' %}
+                Aids                : {{ object.aids }}<br>
+            {% elif object.get_model_name == 'LubrificationTask' %}
+                Lubricant           : {{ object.lubricant }}<br>
+            {% endif %}
+        
+            Contributors            : 
+            {% for contributor in contributors %}
+                {{ contributor.contributors_set.first.quantity }}{{ contributor.acronym }}
+            {% endfor %}
+        </div>
+      </body>
+</html>
 
-<h1 class="">Hello! this is the task detail page </h1>
-<div>
-    Operation           : {{ object.operation }}<br>
-    part                : {{ object.part }}<br>
-    Frequency           : {{ object.get_frequency_display }}<br>
-    Mode                : {{ object.get_mode_display }}<br>
-    Duration            : {{ object.duration }}<br>
-    Intervention Type   : {{ object.get_intervention_type_display }}<br>
-    Description         : <p>{{ object.description }}</p><br>
-    
-    {% if object.get_model_name == 'PreventiveTask' %}
-        Criteria            : {{ object.criteria }}<br>
-    {% elif object.get_model_name == 'CleaningTask' %}
-        Aids                : {{ object.aids }}<br>
-    {% elif object.get_model_name == 'LubrificationTask' %}
-        Lubricant           : {{ object.lubricant }}<br>
-    {% endif %}
-
-    Contributors
-    <ul>
-        {% for contributor in contributors %}
-        <li>{{ contributor.contributor_name }} - Quantity: {{ contributor.contributors_set.first.quantity }}</li>
-        {% endfor %}
-    </ul>
-</div>
-
-<!--
-<div><h1 class="display-5">Sections</h1></div>
-<div>
-    {% for section in section_data %}
-    <div>
-        <ul>
-        <li>Name         : {{ section.section_name }}</li>
-        <li>Description  : {{ section.description }}</li>
-        </ul>
-    </div>
-    {% endfor %}
-</div>
--->  
-
-
-{% endblock  %}

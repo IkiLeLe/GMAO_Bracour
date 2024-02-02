@@ -1,16 +1,20 @@
 from django.shortcuts import get_object_or_404, render
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_control
 from django.views import generic, View
 from .forms import MaintenanceScheduleFilterForm
-from django.http import JsonResponse, HttpResponse, FileResponse, Http404
+from django.http import JsonResponse, HttpResponse, FileResponse, Http404, HttpResponseBadRequest
+from django.urls import reverse
 import io
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import landscape, letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import BaseDocTemplate, Table, TableStyle, PageTemplate, Frame, Spacer, Paragraph, Image, PageBreak, LongTable
 from reportlab.lib.units import inch
+from reportlab.graphics.shapes import Drawing
 from datetime import datetime
+
 
 import csv
 
@@ -18,6 +22,7 @@ from .models import Lines, Equipement, PreventiveTask, CleaningTask, Lubrificati
  
 # Create your views here.
 @method_decorator(login_required, name='dispatch')
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class LineView(generic.TemplateView):
     template_name = 'maintenance_plan/equiplist.html'
     
@@ -28,6 +33,7 @@ class LineView(generic.TemplateView):
         return context
     # Dans views.py
 @method_decorator(login_required, name='dispatch')
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class EquipementView(generic.DetailView):
     template_name = 'maintenance_plan/equipdetail.html'
     model = Equipement
@@ -47,6 +53,7 @@ class EquipementView(generic.DetailView):
 
     
 @method_decorator(login_required, name='dispatch')
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class TaskDetailView(generic.DetailView):
     template_name = 'maintenance_plan/taskdetail.html'
 
@@ -118,6 +125,7 @@ def get_filtered_tasks(request):
         return {'preventive_tasks': [], 'cleaning_tasks': [], 'lubrification_tasks': []}
 
 @method_decorator(login_required, name='dispatch')
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class TaskView(generic.ListView):
     template_name = 'maintenance_plan/task.html'
     context_object_name = 'tasks'
@@ -133,6 +141,7 @@ class TaskView(generic.ListView):
 
 
 @method_decorator(login_required, name='dispatch')
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class ExportCSVView(generic.View):
     def get(self, request, *args, **kwargs):
         tasks = get_filtered_tasks(request)
@@ -192,7 +201,8 @@ def split_text(text, max_length=1350):
         return [text]
 
 
-
+@method_decorator(login_required, name='dispatch')
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class ExportPDFView(View):
     def get(self, request, *args, **kwargs):
 
@@ -219,13 +229,20 @@ class ExportPDFView(View):
             name='TimesNewRoman',
             parent=getSampleStyleSheet()['Normal'],
             fontName='Times-Roman',  # Spécifiez Times-Roman pour utiliser Times New Roman
-            fontSize=11,
-            alignment=0,
+            fontSize=10,
+            alignment=4,
         )
 
+        times_new_roman_style2 = ParagraphStyle(
+            name='TimesNewRoman2',
+            parent=getSampleStyleSheet()['Normal'],
+            fontName='Times-Roman',  # Spécifiez Times-Roman pour utiliser Times New Roman
+            fontSize=10,
+            alignment=1,
+        )
 
         # Créez un objet SimpleDocTemplate avec un buffer en tant que toile
-        doc = BaseDocTemplate(buffer, pagesize=landscape(letter))  
+        doc = BaseDocTemplate(buffer, pagesize=landscape(letter), leftMargin=30, rightMargin=30, topMargin=80, bottomMargin=20)  
     
         page_template = PageTemplate(
             id='header_footer',
@@ -243,97 +260,103 @@ class ExportPDFView(View):
         # Ajouter les en-têtes de colonne
         column_headers = ["Position", "Opération", "Reférence", "Description", "Remarques"]
         #data_list.append(column_headers)
-    
+        content = []
         # Ajouter les données des tâches
         for item in tasks:
-            
-
-                # Diviser la description en parties de 50 caractères
-            description_parts = split_text(item.description)
-
-                # Ajouter les parties de la description à la liste des données
+            descript = item.description.replace('\n', '<br/>')
+            description_parts = split_text(descript)
             for description_part in description_parts:
                 data = [item.location, item.operation, item.part.document_name, description_part, ""]
                 data_list.append([column_headers, data])
-
-            if isinstance(item, PreventiveTask):
-                line1 = "Critère: {}".format(item.criteria)
-            elif isinstance(item, CleaningTask):
-                line1 = "Aides: {}".format(item.aids)
-            elif isinstance(item, LubrificationTask):
-                line1 = "Lubrificant: {}".format(item.lubrificant)
             
-            line2 = "Outils: {}".format(item.tools)
+                intervenant = ""
+            
+
+
+                if isinstance(item, PreventiveTask):
+                    line1 = "Critère: {}".format(item.criteria)
+                    for contributor in item.ison.all():
+                        contributors_instances = Contributors.objects.filter(person=contributor, preventive_task=item)
+                        total_quantity = sum(instance.quantity for instance in contributors_instances)
+                        intervenant += str(total_quantity) + contributor.acronym
+                elif isinstance(item, CleaningTask):
+                    line1 = "Aides: {}".format(item.aids)
+                    for contributor in item.ison.all():
+                        contributors_instances = Contributors.objects.filter(person=contributor, cleaning_task=item)
+                        total_quantity = sum(instance.quantity for instance in contributors_instances)
+                        intervenant += str(total_quantity) + contributor.acronym
+                elif isinstance(item, LubrificationTask):
+                    line1 = "Lubrificant: {}".format(item.lubrificant)
+                    for contributor in item.ison.all():
+                        contributors_instances = Contributors.objects.filter(person=contributor, lubrification_task=item)
+                        total_quantity = sum(instance.quantity for instance in contributors_instances)
+                        intervenant += str(total_quantity) + contributor.acronym
+                
+                line2 = "Outils: {}".format(item.tools)
          
-        content = []
-       
-        for data in data_list:
-            
-            # Ajouter le texte à gauche, au centre et à droite
-            left_text = "Machine: {}<br/>Partie: {}<br/>PFE: Safety Gloves, Safety Shoes, Safety Gog, Ear Plug/Ear Muffs, Hairnet (Clean Room)<br/>Le port des EPI est obligatoire".format(
-                item.part.equipement,
-                item.part.part_name
-            )
-            center_text = "{}<br/>Duree: {}<br/>Mode: {}<br/>Debut: <br/>Fin:<br/>Frequence: {}".format(
-                    item.part.equipement.lineId,
-                    item.duration,
-                    item.get_mode_display(),
-                    item.get_frequency_display()
-            )
-            current_date = datetime.now().strftime("%d %b %y")
-            right_text = "Date: {}<br/>Superviseur:<br/>Intervenant: <br/>Executeur:".format(
-                current_date)
+                
+                # Ajouter le texte à gauche, au centre et à droite
+                left_text = "Machine: {}<br/>Partie: {}<br/>PFE: Safety Gloves, Safety Shoes, Safety Gog, Ear Plug/Ear Muffs, Hairnet (Clean Room)<br/>Le port des EPI est obligatoire<br/>".format(
+                    item.part.equipement,
+                    item.part.part_name,
+                )
+                center_text = "{}<br/>Duree: {}<br/>Mode: {}<br/>Debut: <br/>Fin:<br/>Frequence: {}".format(
+                        item.part.equipement.lineId,
+                        item.duration,
+                        item.get_mode_display(),
+                        item.get_frequency_display()
+                )
+                
+                
+                current_date = datetime.now().strftime("%d %b %y")
+                right_text = "Date : {}<br/>Superviseur: {}<br/>Intervenant: {}<br/>Executeur:".format(
+                    current_date,
+                    request.user.get_full_name(),
+                    intervenant)
 
 
-            # Utiliser Paragraph pour gérer le retour à la ligne automatique
-            left_paragraph = Paragraph(left_text, times_new_roman_style)
-            center_paragraph = Paragraph(center_text, times_new_roman_style)
-            right_paragraph = Paragraph(right_text, times_new_roman_style)
+                # Utiliser Paragraph pour gérer le retour à la ligne automatique
+                left_paragraph = Paragraph(left_text, times_new_roman_style)
+                center_paragraph = Paragraph(center_text, times_new_roman_style2)
+                right_paragraph = Paragraph(right_text, times_new_roman_style)
 
-            # Créer une table à trois colonnes
-            text_table_data = [
-                [left_paragraph, center_paragraph, right_paragraph]
-            ]
-            text_table = Table(text_table_data, colWidths=[doc.width / 3] * 3)
-            
-            paragraph1 = Paragraph(line1, times_new_roman_style)
-            paragraph2 = Paragraph(line2, times_new_roman_style)
-            text_lines = [paragraph1, paragraph2]
+                # Créer une table à trois colonnes
+                text_table_data = [
+                    [left_paragraph, center_paragraph, right_paragraph]
+                ]
+                text_table = Table(text_table_data, colWidths=[doc.width / 3] * 3)
+                text_table.setStyle(TableStyle([
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('LINEBELOW', (0, 0), (-1, -1), 1, colors.black)
+                ]))
+                paragraph1 = Paragraph(line1, times_new_roman_style)
+                paragraph2 = Paragraph(line2, times_new_roman_style)
+                
+                text_line = [paragraph1, paragraph2]
+                data_paragraphs = [Paragraph(str(data_item), times_new_roman_style) for data_item in data]
+                col_widths = [100, 200, 50, 300, 80]
+              
 
-            data_paragraphs = [Paragraph(str(data_item), times_new_roman_style) for data_item in data[1]]
-            col_widths = [100, 200, 50, 300, 80]
-            #table_data = data
-            
+                table = LongTable([column_headers] + [data_paragraphs], colWidths=col_widths)
 
-            table = LongTable([column_headers] + [data_paragraphs], colWidths=col_widths)
-
-            # Définir le style de la table
-            style = TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Times-Roman'),
-                #('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                #('LEFTPADDING', (0, 0), (-1, -1), 6),
-                #('RIGHTPADDING', (0, 0), (-1, -1), 6),
-                #('TOPPADDING', (0, 0), (-1, -1), 3),
-                ('FONTSIZE', (0, 0), (-1, -1), 11),
-                #('ALLOW_WRAP', (0, 0), (-1, -1), True),
-                #('WORD_WRAP', (0, 0), (-1, -1), 'CJK'),
-                #('SPLITBYROWSPAN', (0, 0), (-1, -1), True),
-            ])  # Définir splitByRowSpan à True pour permettre le saut de ligne dans une cellule fusionnée
+                # Définir le style de la table
+                style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+                    ('FONTSIZE', (0, 0), (-1, -1), 11),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Times-Roman'),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ])  
 
 
-            table.setStyle(style)
-            table._argH[1] = 275
-            content.append(Spacer(1, 0.5*inch))
-            content.append(text_table)
-            content.extend(text_lines)
-            content.append(table)
-            content.append(PageBreak())   
+                table.setStyle(style)
+                table._argH[1] = 350
+                content.append(text_table)
+                content.extend(text_line)
+                content.append(Spacer(1, 0.1*inch))
+                content.append(table)
+                content.append(PageBreak())   
         # Construisez le document avec 'header_table' suivi de 'table'
         doc.build(content)
 
@@ -395,16 +418,16 @@ class HeaderFrame:
 
         # Draw left image
         left_image = Image(left_image_path, width=left_image_width, height=left_image_height)
-        left_image.drawOn(self.canvas, self.doc.leftMargin, self.doc.height + self.doc.topMargin - 0.25 * inch)
+        left_image.drawOn(self.canvas, self.doc.leftMargin, self.doc.height + self.doc.topMargin - 0.8 * inch)
 
         # Draw right image
         right_image = Image(right_image_path, width=right_image_width, height=right_image_height)
-        right_image.drawOn(self.canvas, self.doc.width, self.doc.height + self.doc.topMargin - 0.25 * inch)
+        right_image.drawOn(self.canvas, self.doc.width - self.doc.rightMargin - 0.3 * inch, self.doc.height + self.doc.topMargin - 0.8 * inch)
         # Définir les styles de police souhaités
         company_name_style = ParagraphStyle(
             name='CompanyName',
             parent=getSampleStyleSheet()['Heading1'],
-            fontSize=12,
+            fontSize=18,
             alignment=1,
             fontName='Times-Roman'  # Utiliser 'Times-Roman' pour Times New Roman
         )
@@ -412,7 +435,7 @@ class HeaderFrame:
         company_secondary_name_style = ParagraphStyle(
             name='CompanySecondaryName',
             parent=getSampleStyleSheet()['Heading1'],
-            fontSize=12,
+            fontSize=14,
             alignment=1,
             fontName='Courier',
             spaceAfter=6  # Ajuster selon vos besoins
@@ -421,7 +444,7 @@ class HeaderFrame:
         center_text_style = ParagraphStyle(
             name='CenterText',
             parent=getSampleStyleSheet()['Heading1'],
-            fontSize=12,
+            fontSize=13,
             alignment=1,
             fontName='Times-Roman'
         )
@@ -434,8 +457,32 @@ class HeaderFrame:
         ]
 
         # Draw header elements on the canvas
-        y_position = self.doc.height + self.doc.topMargin + 0.25 * inch
+        y_position = self.doc.height + self.doc.topMargin - 0.2 * inch
         for element in header_elements:
             element.wrapOn(self.canvas, self.doc.width, self.doc.topMargin)
-            element.drawOn(self.canvas, self.doc.leftMargin, y_position - element.height)
-            y_position -= element.height/2 # Adjust spacing if needed
+            element.drawOn(self.canvas, self.doc.leftMargin, y_position)
+            y_position -= 0.25 * inch # Adjust spacing if needed
+
+
+class PartFilterView(View):
+    def get(self, request, equipement_serial_number, *args, **kwargs):
+        try:
+            equipement = get_object_or_404(Equipement, serial_number=equipement_serial_number)
+            filtered_parts = Part.objects.filter(equipement=equipement)
+            data = [{'value': part.pk, 'text': str(part)} for part in filtered_parts]
+
+            # Ajoutez l'URL en tant que contexte
+            data.append({'url': reverse('maintenance_plan:part_filter_view', kwargs={'equipement_serial_number': equipement_serial_number})})
+
+            return JsonResponse(data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        
+class EquipementFilterView(View):
+    def get(self, request, line_id, *args, **kwargs):
+        try:
+            equipements = Equipement.objects.filter(lineId=line_id)
+            data = [{'value': equipement.pk, 'text': str(equipement)} for equipement in equipements]
+            return JsonResponse(data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)

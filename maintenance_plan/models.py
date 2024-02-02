@@ -27,7 +27,7 @@ class Equipement (models.Model):
     lineId = models.ForeignKey(Lines, on_delete=models.DO_NOTHING) 
     
     def __str__(self):
-        return self.serial_number
+        return f'{self.name}-{self.serial_number}'
     
 class Part(models.Model):
     part_name = models.CharField(max_length=50)
@@ -36,8 +36,11 @@ class Part(models.Model):
     document_name = models.CharField(max_length=50, null=True, blank=True)
     upload = models.FileField(upload_to='documents/', null=True, blank=True)
     
+    def equipement_id(self):
+        return self.equipement.serial_number if self.equipement else None
+    
     def __str__(self):
-        return f'{self.part_name}/{self.equipement}'
+        return self.part_name
     
 
 class Contributor(models.Model):
