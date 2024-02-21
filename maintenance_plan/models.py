@@ -7,7 +7,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator, RegexVa
 
 # Create your models here.
 class Lines (models.Model):
-    name = models.CharField(max_length=7)
+    name = models.CharField(max_length=10)
     installation_date = models.DateField(auto_now=False, auto_now_add=False, null=True, blank=True)
     target = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     
@@ -30,14 +30,11 @@ class Equipement (models.Model):
         return f'{self.name}-{self.serial_number}'
     
 class Part(models.Model):
-    part_name = models.CharField(max_length=50)
+    part_name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     equipement = models.ForeignKey(Equipement, on_delete=models.CASCADE)
     document_name = models.CharField(max_length=50, null=True, blank=True)
     upload = models.FileField(upload_to='documents/', null=True, blank=True)
-    
-    def equipement_id(self):
-        return self.equipement.serial_number if self.equipement else None
     
     def __str__(self):
         return self.part_name
@@ -87,7 +84,17 @@ class Task (models.Model):
     tools = models.CharField(max_length=255, null=True, blank=True)
     component = models.CharField(max_length=75)
     location = models.CharField(max_length=75)
+    image = models.ImageField(upload_to='images/', 
+                              height_field='image_height', 
+                              width_field='image_width', 
+                              max_length=100, 
+                              null=True, 
+                              blank=True, 
+                              default=None)
+    image_height = models.PositiveIntegerField(null=True, blank=True)
+    image_width = models.PositiveIntegerField(null=True, blank=True)
     
+
     class Meta:
         abstract = True
 

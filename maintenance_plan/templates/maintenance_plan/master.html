@@ -13,9 +13,9 @@
     </head>
     <body>
       <div id="root">
-        <nav class="navbar navbar-expand-lg bg-body-tertiary">
-            <div class="container-fluid" style="padding: 10px">
-              <a class="navbar-brand" href="{% url 'maintenance_plan:line' %}"style="margin-left:10px ;font-size: 15px; font-weight: bold; color: #cc302b;">GMAO <span style = "margin-bottom: 0px;display:block;"></span> Bracour</a>
+        <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top">
+            <div class="container-fluid">
+              <a class="navbar-brand text-primary" href="{% url 'maintenance_plan:line' %}" style="margin-left:10px ;font-size: 15px; font-weight: bold; ">GMAO <br> Bracour</a>
               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor04" aria-controls="navbarColor04" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
@@ -31,19 +31,19 @@
                     <a class="nav-link" href="{% url 'maintenance_plan:task' %}">Tasks</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="#">Pricing</a>
+                    <a class="nav-link" href="#"></a>
                   </li>
-                  
-
                 </ul>
-                
+              </div>  
                   <div class="container nav-item p-2 text-end">
                     <div class="row justify-content-end">
                       <div class="col-4">
                         <p class="fs-3 ">Welcome {{ user.username }}!</p>
                       </div>
                       <div class="col-1">
-                        <a class="nav-link" data-bs-toggle="offcanvas" href="#accountOffcanvas" role="button" aria-controls="accountOffcanvas"><i class="bi bi-person-check-fill" style="font-size: 35px;"></i></a>
+                        <a class="nav-link" data-bs-toggle="offcanvas" href="#accountOffcanvas" role="button" aria-controls="accountOffcanvas">
+                          <i class="bi bi-person-check-fill" style="font-size: 35px;" onmouseover="this.style.color='rgb(3, 105, 247)';" onmouseout="this.style.color='inherit';"></i>
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -51,21 +51,21 @@
                  <div class="container nav-item p-2 text-end">
                     <div class="row justify-content-end">
                       <div class="col-sm-1 ">
-                       <a href="{% url 'account:signup' %}" class="btn btn-outline-secondary btn-sm">Sign up</a>
+                       <a href="{% url 'account:signup' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-person-add"></i> Sign up</a>
                       </div>
                       <div class="col-sm-1">
-                        <a href="{% url 'account:login' %}" class="btn btn-outline-danger btn-sm">Log in</a>
+                        <a href="{% url 'account:login' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-box-arrow-in-right"></i> Log in</a>
                       </div>
                    </div>
                   </div>      
                 {% endif %}
-              </div>
+              
             </div>
         </nav>
 
         <div class="offcanvas offcanvas-end" tabindex="-1" id="accountOffcanvas" aria-labelledby="accountOffcanvasLabel">
           <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="accountOffcanvasLabel">Account</h5>
+            <h5 class="offcanvas-title" id="accountOffcanvasLabel"><i class="bi bi-person-gear"></i> Account</h5>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
           <div class="offcanvas-body">
@@ -82,30 +82,27 @@
               <div class="col">Position</div>
               <div class="col">: <strong>{{ request.user.position }}</strong></div>
             </div>
-            <a href="{% url 'account:edit_profile' %}" class="btn btn-primary btn-sm mt-3">Edit Profile</a>
-            <a href="{% url 'account:password_change' %}" class="btn btn-primary btn-sm mt-3">Edit Password</a>
+            <a href="{% url 'account:edit_profile' %}" class="btn btn-primary btn-sm mt-3"><i class="bi bi-pen"></i> Edit Profile</a>
+            <a href="{% url 'account:password_change' %}" class="btn btn-primary btn-sm mt-3"><i class="bi bi-pen"></i> Edit Password</a>
             <form class="d-flex" method="post" action="{% url 'account:logout' %}">
               {% csrf_token %}
-              <button class="btn btn-outline-danger mt-3" type="submit">Logout</button>
+              <button class="btn btn-outline-danger mt-3" type="submit"><i class="bi bi-box-arrow-left"></i> Logout</button>
             </form>
           </div>
         </div>
-
+        
         <div class="px-6 py-6 ">
           {% block content %}
           {% endblock %}
         </div>
-        <footer class="bg-light text-center fixed-bottom">
+        <footer class="bg-light text-center">
           <div class="">
-            <p class="fs-6 text-danger">Brasserie de La Couronne, Coca-Cola Bottling Company in Haiti </p>
+            <p class="fs-6 text-primary">Brasserie de La Couronne, Coca-Cola Bottling Company in Haiti </p>
           </div>
           
         </footer>
       </div>
       
-
-  
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous" defer></script>
 
         

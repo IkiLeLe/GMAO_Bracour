@@ -5,18 +5,18 @@
 {% block content %}
 <div class="container mx-auto my-auto">
     <div class="col-md-6 my-6 mx-auto p-5 bg-secondary bg-opacity-25 rounded-2">
-        <h1 class="mb-6 h3">Log in</h1>
+        <h1 class="mb-6 h3 text-center">Log in</h1>
     
         <form method="post" action="{% url 'account:login' %}" id="loginForm">
             {% csrf_token %}
     
             <div class="mb-3">
-                <label class="form-label" id="username">Username</label>
+                <label class="form-label" id="username"><i class="bi bi-person"></i> Username</label>
                 {{ form.username }}
             </div>
     
             <div class="mb-3">
-                <label class="form-label" id="password">Password</label>
+                <label class="form-label" id="password"><i class="bi bi-pass"></i> Password</label>
                 {{ form.password }}
             </div>
     
@@ -28,8 +28,8 @@
                 </div>
             {% endif %}
             <div class="row justify-content-md-center pt-5">
-                <div class="col-2">
-                    <button type="submit" class="btn btn-outline-danger">Log in</button>
+                <div class="col-3">
+                    <button type="submit" class="btn btn-outline-primary"><i class="bi bi-box-arrow-in-right"></i> Log in</button>
                 </div>
             </div>
             <!-- Add this code inside your form tag in login.html -->

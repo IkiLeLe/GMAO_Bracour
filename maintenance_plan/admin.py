@@ -123,7 +123,7 @@ class PreventiveTaskAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('Equipement', {'fields': ['line','equipement']}),
-        ('Maintenance préventive', {'fields': ['part', 'operation', 'mode', 'frequency', 'component', 'location', 'criteria', 'description', 'level', 'duration']}),
+        ('Maintenance préventive', {'fields': ['part', 'image', 'operation', 'mode', 'frequency', 'component', 'location', 'criteria', 'description', 'level', 'duration']}),
     ]
 
     list_display = ('operation', 'part', 'equipement_serial_number')
@@ -157,7 +157,7 @@ class CleaningTaskAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('Equipement', {'fields': ['line','equipement']}),
-        ('Maintenance préventive', {'fields': ['part', 'operation', 'mode', 'frequency', 'component', 'location', 'aids', 'description', 'level', 'duration']}),
+        ('Maintenance préventive', {'fields': ['part', 'image', 'operation', 'mode', 'frequency', 'component', 'location', 'aids', 'description', 'level', 'duration']}),
     ]
 
     list_display = ('operation', 'part', 'equipement_serial_number')
@@ -187,7 +187,7 @@ class LubrificationTaskAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('Equipement', {'fields': ['line','equipement']}),
-        ('Maintenance préventive', {'fields': ['part', 'operation', 'mode', 'frequency', 'component', 'location', 'lubrificant', 'description', 'level', 'duration']}),
+        ('Maintenance préventive', {'fields': ['part', 'image', 'operation', 'mode', 'frequency', 'component', 'location', 'lubrificant', 'description', 'level', 'duration']}),
     ]
 
     list_display = ('operation', 'part', 'equipement_serial_number')
@@ -202,94 +202,3 @@ admin.site.register(Contributor)
 admin.site.register(CleaningTask, CleaningTaskAdmin)
 admin.site.register(LubrificationTask, LubrificationTaskAdmin)
 
-'''
-class EquipementAdmin(admin.ModelAdmin):
-     fieldsets = [
-        ('Name', {'fields': ['lineId', 'serial_number', 'name']}),
-        ('Detail', {'fields': ['installation_date', 'manufacturer']}),
-
-        ]
-     inlines = [PartInline, DocumentInline]
-     list_display = ('serial_number', 'name', 'lineId')
-
-
-class PreventiveTaskAdmin(admin.ModelAdmin): 
-     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'part':
-            kwargs['queryset'] = Part.objects.select_related('equipement')
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-     
-     def get_form(self, request, obj=None, **kwargs):
-         form = super().get_form(request, obj, **kwargs)
-         form.base_fields['part'].queryset = Part.objects.select_related('equipement')
-         return form
-      
-     def equipement_serial_number(self, obj):
-         return obj.part.equipement.name
-         
-     def get_fields(self, request, obj=None):
-         fields = super().get_fields(request, obj)
-         if obj:
-             fields += ('equipement_serial_number')
-         return fields
-     
-     equipement_serial_number.short_description = 'Equipement'
-     list_display = ('operation','part', 'equipement_serial_number')
-     
-     fieldsets = [
-         ('Equipement', {'fields': ['equipement_serial_number']}),
-         ('Maintenance préventive', {'fields': ['part', 'operation', 'mode', 'frequency', 'component', 'location', 'criteria', 'description', 'level', 'duration']}),
-        ]
-     inlines = [ContributorsInline]
-
-
-
-
-class PreventiveTaskForm(forms.ModelForm):
-    part__equipement = forms.ModelChoiceField(
-        queryset=Equipement.objects.all(),
-        required=False,
-        to_field_name='serial_number',  # Utilisez le champ unique de l'Equipement
-        widget=forms.Select(attrs={'class': 'equipement-selector'}),
-    )
-
-    class Meta:
-        model = PreventiveTask
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super(PreventiveTaskForm, self).__init__(*args, **kwargs)
-
-        # Filtrer les pièces disponibles dans le champ 'part' en fonction de l'équipement choisi
-        equipement = self.initial.get('part__equipement', None)
-
-        if equipement:
-            try:
-                equipement_instance = Equipement.objects.get(serial_number=equipement)
-                self.fields['part'].queryset = Part.objects.filter(equipement=equipement_instance)
-            except Equipement.DoesNotExist:
-                self.fields['part'].queryset = Part.objects.none()
-        else:
-            self.fields['part'].queryset = Part.objects.none()
-        
-        # Ajouter l'attribut data-equipement aux options du champ 'part'
-        for choice in self.fields['part'].choices:
-            if choice[1].part:
-                choice[1].field.widget.attrs['data-equipement'] = choice[1].equipement.equipement_id()
-
-class PreventiveTaskAdmin(admin.ModelAdmin):
-    form = PreventiveTaskForm
-    model = PreventiveTask
-
-    class Media:
-        js = ('js/update_parts.js',)
-
-    fieldsets = (
-        ('Informations générales', {
-            'fields': ('operation', 'description', 'frequency', 'mode', 'level', 'duration', 'tools', 'component', 'location')
-        }),
-        ('Équipement et Pièces', {
-            'fields': ('part__equipement', 'part', 'criteria'),
-        }),
-    )
-'''

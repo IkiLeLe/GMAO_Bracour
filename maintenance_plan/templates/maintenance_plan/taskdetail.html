@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+    {% load static %}
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,28 +12,78 @@
       </head>
 
       <body>
-        <div>
-            Operation           : {{ object.operation }}<br>
-            part                : {{ object.part }}<br>
-            Frequency           : {{ object.get_frequency_display }}<br>
-            Mode                : {{ object.get_mode_display }}<br>
-            Duration            : {{ object.duration }}<br>
-            Intervention Type   : {{ object.get_intervention_type_display }}<br>
-            Description         : <p>{{ object.description|linebreaks|safe }}</p><br>
-            
-            {% if object.get_model_name == 'PreventiveTask' %}
-                Criteria            : {{ object.criteria }}<br>
-            {% elif object.get_model_name == 'CleaningTask' %}
-                Aids                : {{ object.aids }}<br>
-            {% elif object.get_model_name == 'LubrificationTask' %}
-                Lubricant           : {{ object.lubricant }}<br>
-            {% endif %}
-        
-            Contributors            : 
-            {% for contributor in contributors %}
-                {{ contributor.contributors_set.first.quantity }}{{ contributor.acronym }}
-            {% endfor %}
+        <div class="container">
+            <h1 class="fs-5 text-primary text-center">{{ object.operation }}</h1>
+            <div class="row">
+                <div class="col-4">
+                    <table class="table sticky-top">
+                        <tbody>
+                            <tr>
+                                <td><strong>Partie</strong></td>
+                                <td>{{ object.part }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Composant</strong></td>
+                                <td>{{ object.component }}</td>
+                            </tr>
+                            <tr>
+                                {% if object.get_model_name == 'PreventiveTask' %}
+                                    <td><strong>Critère</strong></td>
+                                {% elif object.get_model_name == 'CleaningTask' %}
+                                    <td><strong>Auxiliaires</strong></td>
+                                {% elif object.get_model_name == 'LubrificationTask' %}
+                                    <td><strong>Lubrifiant</strong></td>
+                                {% endif %}
+
+                                {% if object.get_model_name == 'PreventiveTask' %}
+                                    <td>{{ object.criteria }}</td>
+                                {% elif object.get_model_name == 'CleaningTask' %}
+                                    <td>{{ object.aids }}</td>
+                                {% elif object.get_model_name == 'LubrificationTask' %}
+                                    <td>{{ object.lubricant }}</td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <td><strong>Fréquence</strong></td>
+                                <td>{{ object.get_frequency_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Durée</strong></td>
+                                <td>{{ object.duration }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mode</strong></td>
+                                <td>{{ object.get_mode_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Niveau</strong></td>
+                                <td>{{ object.level }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Outils</strong></td>
+                                <td>{{ object.tools }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Intervenant</strong></td>
+                                <td>
+                                    {% for contributor in contributors %}
+                                        {{ contributor.contributors_set.first.quantity }}{{ contributor.acronym }}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-8">
+                    <strong>Description</strong><br>
+                    <p>{{ object.description|linebreaks|safe }}</p>
+                    {% if object.image %}
+                        <img src="{{ object.image.url }}" class="object-fit-none border rounded" alt="{{ object.part }} Image">
+                    {% endif %}
+                </div>
+            </div>
         </div>
+
       </body>
 </html>
 

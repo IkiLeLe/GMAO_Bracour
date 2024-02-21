@@ -69,6 +69,7 @@ def login_view(request):
     return render(request, 'account/login.html', {'form': form})
 
 @login_required
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def edit_profile(request):
     if request.method == 'POST':
         form = EditProfileForm(request.POST, instance=request.user)
@@ -86,6 +87,7 @@ def edit_profile(request):
     return render(request, 'account/edit_profile.html', {'form': form})
 
 @login_required
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def password_change(request):
     if request.method == 'POST':
         password_form = PasswordChangeForm(user=request.user, data=request.POST)

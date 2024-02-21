@@ -1,5 +1,7 @@
 {% extends "maintenance_plan/master.html" %}
 
+{% block title %}Preventive Maintenance{% endblock %}
+
 {% block content %}
 
 <div class="container-fluid">
@@ -7,9 +9,9 @@
         <div class="col-md-8 bg-light" style="width: 75%; padding: 50px">
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                    <button class="nav-link active tab-button" id="preventivetask" data-bs-toggle="tab" data-bs-target="#nav-preventivetask" type="button" role="tab" aria-controls="nav-preventivetask" aria-selected="true">Preventive</button>
-                    <button class="nav-link tab-button" id="cleaningtask" data-bs-toggle="tab" data-bs-target="#nav-cleaningtask" type="button" role="tab" aria-controls="nav-cleaningtask" aria-selected="false">Cleaning</button>
-                    <button class="nav-link tab-button" id="lubrificationtask" data-bs-toggle="tab" data-bs-target="#nav-lubrificationtask" type="button" role="tab" aria-controls="nav-lubrificationtask" aria-selected="false">Lubrification</button>
+                    <button class="nav-link active tab-button" id="preventivetask" data-bs-toggle="tab" data-bs-target="#nav-preventivetask" type="button" role="tab" aria-controls="nav-preventivetask" aria-selected="true"><i class="bi bi-list-task"></i> Preventive</button>
+                    <button class="nav-link tab-button" id="cleaningtask" data-bs-toggle="tab" data-bs-target="#nav-cleaningtask" type="button" role="tab" aria-controls="nav-cleaningtask" aria-selected="false"><i class="bi bi-list-task"></i> Cleaning</button>
+                    <button class="nav-link tab-button" id="lubrificationtask" data-bs-toggle="tab" data-bs-target="#nav-lubrificationtask" type="button" role="tab" aria-controls="nav-lubrificationtask" aria-selected="false"><i class="bi bi-list-task"></i> Lubrification</button>
                 </div>
             </nav>
             <div class="tab-content" id="nav-tabContent">
@@ -86,15 +88,15 @@
         </div>
            
         <div class="col-md-3 rounded bg-light " style="width: 25%; padding: 50px">
-            <div class="sticky-top">
-                <h2>Filter</h2>
+            <div class="">
+                <h2><i class="bi bi-funnel"></i> Filter</h2>
                 <form method="get" class="form-inline" id="filterForm">
                     {{ form.as_p }}
-                    <button type="reset" class="btn btn-secondary">Clear</button><br>
+                    <button type="reset" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Clear</button><br>
                 </form>
                 <div class="export-buttons mt-3">
-                    <a href="{% url 'maintenance_plan:export_csv' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-success export-btn" data-export-type="csv">Export to CSV</a>
-                    <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf">Export to PDF</a>
+                    <a href="{% url 'maintenance_plan:export_csv' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-success export-btn" data-export-type="csv"><i class="bi bi-filetype-csv"></i> CSV</a>
+                    <a href="{% url 'maintenance_plan:export_pdf' %}?{{ filter_form.cleaned_data.urlencode }}" class="btn btn-danger export-btn" data-export-type="pdf"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
                 </div>
             </div>
         </div>
@@ -102,7 +104,7 @@
 </div>
 
 <div class="modal fade" id="taskDetailModal" tabindex="-1" aria-labelledby="taskDetailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="taskDetailModalLabel">Task Details</h5>
@@ -118,7 +120,8 @@
     </div>
 </div>
 
-<script>
+
+    <script>
     document.addEventListener("DOMContentLoaded", function() {
         const filterForm = document.getElementById('filterForm');
         const formInputs = filterForm.querySelectorAll('input, select');
@@ -232,19 +235,8 @@
         });
     });
 </script>
+
+
 {% endblock %}
 
-<!--
-        maintenanceTables.forEach(function(tableElement) {
-            // Ajoutez un gestionnaire d'événements de clic à chaque tableau
-            tableElement.addEventListener('click', function(event) {
-                const clickedRow = event.target.closest('tr');
-                const detailUrl = clickedRow.getAttribute('data-detail-url');
-                console.log('Detail URL:', detailUrl);
-                if (detailUrl) {
-                    window.location.href = detailUrl;
-                }
-            });
-        });
 
--->

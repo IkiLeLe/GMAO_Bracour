@@ -14,9 +14,12 @@ from reportlab.platypus import BaseDocTemplate, Table, TableStyle, PageTemplate,
 from reportlab.lib.units import inch
 from reportlab.graphics.shapes import Drawing
 from datetime import datetime
+from django.utils.encoding import smart_str
 
-
+import spacy
 import csv
+import os
+from django.conf import settings
 
 from .models import Lines, Equipement, PreventiveTask, CleaningTask, LubrificationTask, Part, Contributor, Contributors
  
@@ -146,21 +149,18 @@ class ExportCSVView(generic.View):
     def get(self, request, *args, **kwargs):
         tasks = get_filtered_tasks(request)
 
-        # Récupérez l'onglet actif à partir des paramètres de requête
         active_tab = request.GET.get('active_tab', None)
 
-        # Filtrez les tâches en fonction de l'onglet actif
         if active_tab == 'nav-preventivetask':
             tasks = tasks['preventive_tasks']
-            header = ['Operation', 'Equipement', 'Line', 'Criteria']
+            header = ['Equipement', 'Partie', 'Opération', 'Mode', 'Fréquence', 'Element de Construstion','Position', 'Critère', 'Description', 'Niveau', 'Durée', 'Intervenant', 'Référence']
         elif active_tab == 'nav-cleaningtask':
             tasks = tasks['cleaning_tasks']
-            header = ['Operation', 'Equipement', 'Line', 'Aids']
+            header = ['Equipement', 'Partie', 'Opération', 'Mode', 'Fréquence', 'Element de Construstion','Position', 'Aides', 'Description', 'Niveau', 'Durée', 'Intervenant', 'Référence']
         elif active_tab == 'nav-lubrificationtask':
             tasks = tasks['lubrification_tasks']
-            header = ['Operation', 'Equipement', 'Line', 'Lubrificant', 'Quantity']
+            header = ['Equipement', 'Partie', 'Opération', 'Mode', 'Fréquence', 'Element de Construstion','Position', 'Lubrification', 'Description', 'Niveau', 'Durée', 'Intervenant', 'Référence']
         else:
-            # Onglet inconnu, utilisez toutes les tâches par défaut
             tasks = tasks['preventive_tasks'] + tasks['cleaning_tasks'] + tasks['lubrification_tasks']
             header = ['Operation', 'Equipement', 'Line', 'Criteria', 'Aids', 'Lubrificant', 'Quantity']
 
@@ -168,37 +168,95 @@ class ExportCSVView(generic.View):
         response['Content-Disposition'] = 'attachment; filename="maintenance_schedule.csv"'
 
         writer = csv.writer(response)
-        writer.writerow(header)
+
+        # Ajout du marqueur BOM pour l'encodage UTF-8
+        response.write(u'\ufeff'.encode('utf-8'))
+        response.write(','.join(header).encode('utf-8') + b'\n')
 
         for item in tasks:
+            intervenant = ""
             if isinstance(item, PreventiveTask):
-                writer.writerow([item.operation, item.part.equipement.serial_number, item.part.equipement.lineId, item.criteria])
+                for contributor in item.ison.all():
+                    contributors_instances = Contributors.objects.filter(person=contributor, preventive_task=item)
+                    total_quantity = sum(instance.quantity for instance in contributors_instances)
+                    intervenant += str(total_quantity) + contributor.acronym
+                writer.writerow([
+                    smart_str(item.part.equipement),
+                    smart_str(item.part),
+                    smart_str(item.operation),
+                    smart_str(item.get_mode_display()),
+                    smart_str(item.get_frequency_display()),
+                    smart_str(item.component),
+                    smart_str(item.location),
+                    smart_str(item.criteria),
+                    smart_str(item.description),
+                    smart_str(item.level),
+                    smart_str(item.duration),
+                    smart_str(intervenant),
+                    smart_str(item.part.document_name)
+                ])
             elif isinstance(item, CleaningTask):
-                writer.writerow([item.operation, item.part.equipement.serial_number, item.part.equipement.lineId, item.aids])
+                for contributor in item.ison.all():
+                    contributors_instances = Contributors.objects.filter(person=contributor, cleaning_task=item)
+                    total_quantity = sum(instance.quantity for instance in contributors_instances)
+                    intervenant += str(total_quantity) + contributor.acronym
+                writer.writerow([
+                    smart_str(item.part.equipement),
+                    smart_str(item.part),
+                    smart_str(item.operation),
+                    smart_str(item.get_mode_display()),
+                    smart_str(item.get_frequency_display()),
+                    smart_str(item.component),
+                    smart_str(item.location),
+                    smart_str(item.aids),
+                    smart_str(item.description),
+                    smart_str(item.level),
+                    smart_str(item.duration),
+                    smart_str(intervenant),
+                    smart_str(item.part.document_name)
+                ])
             elif isinstance(item, LubrificationTask):
-                writer.writerow([item.operation, item.part.equipement.serial_number, item.part.equipement.lineId, item.lubrificant, item.quantity])
+                for contributor in item.ison.all():
+                    contributors_instances = Contributors.objects.filter(person=contributor, lubrification_task=item)
+                    total_quantity = sum(instance.quantity for instance in contributors_instances)
+                    intervenant += str(total_quantity) + contributor.acronym
+                writer.writerow([
+                    smart_str(item.part.equipement),
+                    smart_str(item.part),
+                    smart_str(item.operation),
+                    smart_str(item.get_mode_display()),
+                    smart_str(item.get_frequency_display()),
+                    smart_str(item.component),
+                    smart_str(item.location),
+                    smart_str(item.lubrificant),
+                    smart_str(item.description),
+                    smart_str(item.level),
+                    smart_str(item.duration),
+                    smart_str(intervenant),
+                    smart_str(item.part.document_name)
+                ])
 
         return response
 
 def split_text(text, max_length=1350):
     """
-    Split text into parts with a maximum length without cutting words.
+    Split text into parts with a maximum length without cutting sentences.
     """
-    if len(text) > max_length:
-        words = text.split()
-        result = []
-        current_part = ""
-        for word in words:
-            if len(current_part) + len(word) + 1 <= max_length:
-                current_part += word + " "
-            else:
-                result.append(current_part.rstrip())
-                current_part = word + " "
-        if current_part:
-            result.append(current_part.rstrip())
-        return result
-    else:
-        return [text]
+    nlp = spacy.load("fr_core_news_sm")
+    doc = nlp(text)
+    
+    result = []
+    current_part = ""
+    
+    for sent in doc.sents:
+        if len(current_part) + len(sent.text) <= max_length:
+            current_part += sent.text
+        else:
+            result.append(current_part)
+            current_part = sent.text
+    if current_part:
+        result.append(current_part)
+    return result
 
 
 @method_decorator(login_required, name='dispatch')
@@ -232,7 +290,7 @@ class ExportPDFView(View):
             fontSize=10,
             alignment=4,
         )
-
+        
         times_new_roman_style2 = ParagraphStyle(
             name='TimesNewRoman2',
             parent=getSampleStyleSheet()['Normal'],
@@ -300,7 +358,8 @@ class ExportPDFView(View):
                     item.part.equipement,
                     item.part.part_name,
                 )
-                center_text = "{}<br/>Duree: {}<br/>Mode: {}<br/>Debut: <br/>Fin:<br/>Frequence: {}".format(
+                center_text = "ID: {}<br/>{}<br/>Duree: {}<br/>Mode: {}<br/>Frequence: {}".format(
+                        item.id,
                         item.part.equipement.lineId,
                         item.duration,
                         item.get_mode_display(),
@@ -309,9 +368,12 @@ class ExportPDFView(View):
                 
                 
                 current_date = datetime.now().strftime("%d %b %y")
-                right_text = "Date : {}<br/>Superviseur: {}<br/>Intervenant: {}<br/>Executeur:".format(
-                    current_date,
-                    request.user.get_full_name(),
+                name = ""
+                if request.user.position == "Superviseur":
+                    name = request.user.get_full_name()
+
+                right_text = "Superviseur: {}<br/>Intervenant: {}".format(
+                    name,
                     intervenant)
 
 
@@ -334,7 +396,7 @@ class ExportPDFView(View):
                 
                 text_line = [paragraph1, paragraph2]
                 data_paragraphs = [Paragraph(str(data_item), times_new_roman_style) for data_item in data]
-                col_widths = [100, 200, 50, 300, 80]
+                col_widths = [100, 190, 60, 300, 80]
               
 
                 table = LongTable([column_headers] + [data_paragraphs], colWidths=col_widths)
@@ -356,7 +418,22 @@ class ExportPDFView(View):
                 content.extend(text_line)
                 content.append(Spacer(1, 0.1*inch))
                 content.append(table)
-                content.append(PageBreak())   
+                content.append(PageBreak())  
+
+            image_path = item.image.path if item.image else None
+
+            if image_path:
+                textimage = "ID: {}<br/>{}<br/>Image {}". format(item.id,item.part.equipement, item.part)
+                paragraph = Paragraph(textimage, times_new_roman_style2)
+                # Load the image into the PDF document
+                image = Image(image_path)
+                # Adjust the width and height of the image if needed
+                image.drawWidth = 700  # Adjust as per your requirement
+                image.drawHeight = 400  # Adjust as per your requirement
+                content.append(paragraph)
+                content.append(Spacer(1, 0.1*inch))
+                content.append(image)
+                content.append(PageBreak())  # Add spacer for spacing 
         # Construisez le document avec 'header_table' suivi de 'table'
         doc.build(content)
 
@@ -377,11 +454,11 @@ class ExportPDFView(View):
     def draw_header(self, canvas, doc):
         # Get header data
         header_data = {
-            'left_image_path': "picture/imgcouronne.png",
+            'left_image_path': "static/images/imgcouronne.png",
             'left_image_width': 70,
             'left_image_height': 50,
             'company_name': "BRASSERIE DE LA COURONNE S.A",
-            'right_image_path': "picture/coca-cola.jpg",
+            'right_image_path': "static/images/coca-cola.jpg",
             'right_image_width': 90,
             'right_image_height': 50,
             'company_secondary_name': "Coca Cola bottling company of Haïti",

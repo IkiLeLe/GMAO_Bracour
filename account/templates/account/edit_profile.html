@@ -6,33 +6,33 @@
 
 <div class="container mx-auto my-auto">
     <div class="col-md-6 my-6 mx-auto p-5 bg-secondary bg-opacity-25 rounded-2">
-        <h1 class="mb-6 h3">Edit Profile</h1>
+        <h1 class="mb-6 h3 text-center">Edit Profile</h1>
 
         <form method="post" action="{% url 'account:edit_profile' %}">
             {% csrf_token %}
 
             <div class="mb-3">
-                <label class="form-label">First Name</label>
+                <label class="form-label"><i class="bi bi-file-person"></i> First Name</label>
                 <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control">
             </div>
             
             <div class="mb-3">
-                <label class="form-label">Last Name</label>
+                <label class="form-label"><i class="bi bi-file-person"></i> Last Name</label>
                 <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Username</label>
+                <label class="form-label"><i class="bi bi-person-circle"></i> Username</label>
                 <input type="text" name="username" value="{{ user.username }}" class="form-control">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Position</label>
+                <label class="form-label"><i class="bi bi-person-workspace"></i> Position</label>
                 <input type="text" name="position" value="{{ user.position }}" class="form-control">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Email</label>
+                <label class="form-label"><i class="bi bi-envelope-at"></i> Email</label>
                 <input type="email" name="email" value="{{ user.email }}" class="form-control">
             </div>
 
@@ -40,7 +40,7 @@
             <div class="row justify-content-md-center pt-5">
                 <div class="col-4">            
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmPasswordModal">
-                        Save Changes
+                        <i class="bi bi-check2-circle"></i> Save Changes
                     </button>
                 </div>
             </div>                    

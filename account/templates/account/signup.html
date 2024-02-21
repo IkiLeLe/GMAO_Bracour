@@ -6,48 +6,48 @@
 
 <div class="container mx-auto my-auto">
     <div class="col-md-6 my-6 mx-auto p-5 bg-secondary bg-opacity-25 rounded-2">
-        <h1 class="mb-6 h3">Sign up</h1>
+        <h1 class="mb-6 h3 text-center">Sign up</h1>
 
         <form method="post" action=".">
             {% csrf_token %}
 
             <div class="mb-3">
-                <label class="form-label">First Name</label>
+                <label class="form-label"><i class="bi bi-file-person"></i> First Name</label>
                 {{ form.first_name }}
             </div>
             
             <div class="mb-3">
-                <label class="form-label">Last Name</label>
+                <label class="form-label"><i class="bi bi-file-person"></i> Last Name</label>
                 {{ form.last_name }}
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Badge Number</label>
+                <label class="form-label"><i class="bi bi-person-badge"></i> Badge Number</label>
                 {{ form.badge_number }}
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Position</label>
+                <label class="form-label"><i class="bi bi-person-workspace"></i> Position</label>
                 {{ form.position }}
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Username</label>
+                <label class="form-label"><i class="bi bi-person-circle"></i> Username</label>
                 {{ form.username }}
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Email</label>
+                <label class="form-label"><i class="bi bi-envelope-at"></i> Email</label>
                 {{ form.email }}
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Password</label>
+                <label class="form-label"><i class="bi bi-pass"></i> Password</label>
                 {{ form.password1 }}
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Repeat password</label>
+                <label class="form-label"><i class="bi bi-pass"></i> Repeat password</label>
                 {{ form.password2 }}
             </div>
 
@@ -62,8 +62,8 @@
             {% endif %}
             
             <div class="row justify-content-md-center pt-5">
-                <div class="col-2">
-                    <button class="btn btn-outline-danger">Submit</button>
+                <div class="col-3">
+                    <button class="btn btn-outline-primary"><i class="bi bi-check2-circle"></i> Submit</button>
                 </div>
             </div>
             

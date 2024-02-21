@@ -2,17 +2,17 @@
 
 {% block content %}
 
-<div class="container-fluid p-3">
+<div class="container-fluid" style ="padding-left: 150px; padding-right: 150px; padding-top: 30px;">
     <div class="row">
         {% for line in Line_list %}
             <div class="col mb-3" >
-                <h1 class="display-7 rounded-3 me-6" style="padding: 10px; color: rgb(119, 39, 39) ; background-color:rgb(230, 170, 170)"
+                <h1 class="display-5 rounded-3 text-bg-primary" style="margin-right: 160px;padding-left: 10px; color: rgb(255, 255, 255) ; background-color:rgba(3, 105, 247, 0.795); background-image: var(--bs-gradient);"
                 >{{ line.name }}</h1>
                 <ul class="list-group" >
                     {% for equipment in Equipement_list %}
                         {% if equipment.lineId_id == line.id %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center" style="padding: 10px; background-color:rgb(230, 170, 170)" >
-                                <a href="{% url 'maintenance_plan:detail' equipment.serial_number %}" style="text-decoration: none; color: inherit;" onmouseover="this.style.color='rgb(175, 65, 65)';" onmouseout="this.style.color='inherit';">
+                            <li class="list-group-item text-bg-primary d-flex justify-content-between align-items-center bg-opacity-75" style="margin-right: 30px; padding: 10px; color: rgb(255, 255, 255); background-color:rgba(3, 105, 247, 0.795);" >
+                                <a href="{% url 'maintenance_plan:detail' equipment.serial_number %}" style="text-decoration: none; color: inherit; " onmouseover="this.style.color='rgb(205, 215, 223)';" onmouseout="this.style.color='inherit';">
                                     {{ equipment.serial_number }}-{{ equipment.name }}
                                 </a>
                             </li>

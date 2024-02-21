@@ -2,12 +2,12 @@
 
 {% block content %}
 
-<h1 class="display-4 text-center">{{ object.name }} - {{ object.serial_number }}</h1>
+<h1 class="display-4 text-center"><strong>{{ object.name|upper }}</strong>-{{ object.serial_number }}</h1>
 <div class="container">
     <div class="row">
         <div class="col-4">
-            <div class="card border-danger mb-3" style="max-width: 18rem;">
-                <div class="card-header">{{ object.serial_number }}</div>
+            <div class="card border-primary mb-3" style="max-width: 18rem;">
+                <div class="card-header text-primary"><strong>Informations</strong></div>
                 <div class="card-body">
                     <div class="row row-cols-2">
                         <div class="col">Name</div>
@@ -23,7 +23,7 @@
             </div>
         </div>
         <div class="col-8">
-            <div><h1 class="display-5">Part</h1></div>
+            <div><h1 class="fs-2">Part</h1></div>
 
             <div class="row">
                 <div class="col-4">
@@ -97,14 +97,3 @@
 </div>
 
 {% endblock  %}
-
-<div class="container-fluid">
-    {% for section in section_data %}
-    <div class="card border-danger mb-3" style="max-width: 18rem;">
-        <div class="card-header">{{ section.section_name }}</div>
-        <div class="card-body">
-            <p class="card-text">{{ section.description }}</p>
-        </div>
-    </div>
-    {% endfor %}
-</div>

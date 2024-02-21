@@ -73,20 +73,3 @@ class EditProfileForm(UserChangeForm):
 
         return password
     
-'''
- # Champs de changement de mot de passe
-    old_password = forms.CharField(widget=forms.PasswordInput(attrs={
-        'placeholder': 'Your current password',
-        'class': 'form-control'
-    }), required=False)  # Le mot de passe actuel n'est pas obligatoire, mais recommandé
-    
-    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={
-        'placeholder': 'New password',
-        'class': 'form-control'
-    }), required=False)
-
-    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={
-        'placeholder': 'Repeat new password',
-        'class': 'form-control'
-    }), required=False)
-'''
